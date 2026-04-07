@@ -1,24 +1,20 @@
-from datetime import datetime
-from sqlalchemy import ForeignKey, String, Boolean, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey, Enum as PgEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+if TYPE_CHECKING:
+    from .mission import Mission
+from .enums import MissionEventType
 
-
-class Event(Base):
-    __tablename__ = "events"
+class MissionEvent(Base):
+    __tablename__ = "mission_events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    mission_id: Mapped[int] = mapped_column(ForeignKey("missions.id"))
+    event_type: Mapped[MissionEventType] = mapped_column(PgEnum(MissionEventType), nullable=False)
+    chance: Mapped[int] = mapped_column(default=10, server_default="10")  # базовый шанс события в %
+    description: Mapped[str] = mapped_column(default="", server_default="")  # текст описания события
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-
-    type: Mapped[str] = mapped_column(String(32))
-    description: Mapped[str] = mapped_column(String(255))
-
-    processed: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now,
-        server_default=func.now()
-    )
+    mission: Mapped["Mission"] = relationship(back_populates="events")

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -19,6 +19,7 @@ class MissionCharacter(Base):
     character_id: Mapped[int] = mapped_column(
         ForeignKey("characters.id"), index=True
     )
+    slot_number: Mapped[int] = mapped_column(Integer)
 
     user_mission: Mapped["UserMission"] = relationship(back_populates="characters")
     character: Mapped["Character"] = relationship(back_populates="mission_links")

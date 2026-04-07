@@ -35,8 +35,10 @@ class Character(Base):
     )
 
     power: Mapped[int] = mapped_column(Integer)
+    agility: Mapped[int] = mapped_column(Integer)
     intellect: Mapped[int] = mapped_column(Integer)
     loyalty: Mapped[int] = mapped_column(Integer)
+
 
     is_busy: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -48,3 +50,6 @@ class Character(Base):
 
     user: Mapped["User"] = relationship(back_populates="characters")
     mission_links: Mapped[list["MissionCharacter"]] = relationship(back_populates="character")
+    # Связи с оружием и инструментами
+    weapons: Mapped[list["Weapon"]] = relationship(back_populates="owner")
+    tools: Mapped[list["Tool"]] = relationship(back_populates="owner")
