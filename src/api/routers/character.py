@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_db, get_current_user
 from services.character_service import CharacterService
 from schemas.character_schemas import CharacterCreate, CharacterRead
-from schemas import UserRead
 
 router = APIRouter(prefix="/characters", tags=["Characters"])
 

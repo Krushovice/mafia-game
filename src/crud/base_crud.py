@@ -8,10 +8,6 @@ ModelType = TypeVar("ModelType", bound=declarative_base())
 class CRUDBase(Generic[ModelType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
-
-    async def create(self, session: AsyncSession, obj_in: dict) -> ModelType:
-        return await self.create(session, obj_in, commit=True)
-
     async def create(self, session: AsyncSession, obj_in: dict, commit: bool = True) -> ModelType:
         # coerce string values into Enum members when model column is Enum
         data = dict(obj_in)
@@ -41,9 +37,6 @@ class CRUDBase(Generic[ModelType]):
         result = await session.execute(select(self.model))
         return result.scalars().all()
 
-    async def update(self, session: AsyncSession, obj_id: int, obj_in: dict) -> ModelType | None:
-        return await self.update(session, obj_id, obj_in, commit=True)
-
     async def update(self, session: AsyncSession, obj_id: int, obj_in: dict, commit: bool = True) -> ModelType | None:
         obj = await self.get(session, obj_id)
         if not obj:
@@ -66,9 +59,6 @@ class CRUDBase(Generic[ModelType]):
             await session.commit()
             await session.refresh(obj)
         return obj
-
-    async def delete(self, session: AsyncSession, obj_id: int) -> bool:
-        return await self.delete(session, obj_id, commit=True)
 
     async def delete(self, session: AsyncSession, obj_id: int, commit: bool = True) -> bool:
         obj = await self.get(session, obj_id)

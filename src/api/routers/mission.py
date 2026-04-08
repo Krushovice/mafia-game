@@ -7,7 +7,6 @@ from schemas.mission_schemas import MissionCreate, MissionRead
 from schemas.mission_event_schemas import MissionEventCreate, MissionEventRead
 from schemas.user_mission_schemas import UserMissionStart, UserMissionRead
 from api.dependencies import get_current_user
-from services.user_service import UserService
 from crud.other_crud import mission_event_crud
 
 router = APIRouter(prefix="/missions", tags=["Missions"])

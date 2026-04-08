@@ -77,9 +77,6 @@ class CRUDMission(CRUDBase[Mission]):
         result = await session.execute(select(Mission).options(selectinload(Mission.events)))
         return result.scalars().all()
 
-    async def add_event(self, session: AsyncSession, mission_id: int, event_data: dict) -> MissionEvent:
-        return await self.add_event(session, mission_id, event_data, commit=True)
-
     async def add_event(self, session: AsyncSession, mission_id: int, event_data: dict, commit: bool = True) -> MissionEvent:
         event = MissionEvent(**event_data, mission_id=mission_id)
         session.add(event)
@@ -108,9 +105,6 @@ class CRUDUserMission(CRUDBase[UserMission]):
 class CRUDMissionCharacter(CRUDBase[MissionCharacter]):
     def __init__(self):
         super().__init__(MissionCharacter)
-
-    async def create_link(self, session: AsyncSession, user_mission_id: int, character_id: int, slot_number: int):
-        return await self.create_link(session, user_mission_id, character_id, slot_number, commit=True)
 
     async def create_link(self, session: AsyncSession, user_mission_id: int, character_id: int, slot_number: int, commit: bool = True):
         obj = MissionCharacter(user_mission_id=user_mission_id, character_id=character_id, slot_number=slot_number)

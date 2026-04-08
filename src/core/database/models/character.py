@@ -8,6 +8,8 @@ from .base import Base
 if TYPE_CHECKING:
     from .user import User
     from .mission_character import MissionCharacter
+    from .weapon import Weapon
+    from .tool import Tool
 from .enums import CharacterRole, CharacterTrait
 
 
