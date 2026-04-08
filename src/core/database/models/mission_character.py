@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -23,3 +23,7 @@ class MissionCharacter(Base):
 
     user_mission: Mapped["UserMission"] = relationship(back_populates="characters")
     character: Mapped["Character"] = relationship(back_populates="mission_links")
+    __table_args__ = (
+        # prevent same character being linked twice to same mission instance
+        UniqueConstraint("user_mission_id", "character_id", name="uq_mission_char_user_mission_character"),
+    )

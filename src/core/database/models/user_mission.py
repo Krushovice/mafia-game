@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, DateTime, Integer, Enum, func, text
+from sqlalchemy import ForeignKey, DateTime, Integer, Enum, func, text, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -36,8 +36,13 @@ class UserMission(Base):
 
     success_chance: Mapped[int] = mapped_column(Integer)
     result_reward: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_user_missions_ends_at_status", "ends_at", "status"),
+    )
 
     user: Mapped["User"] = relationship(back_populates="missions")
     mission: Mapped["Mission"] = relationship(back_populates="user_missions")

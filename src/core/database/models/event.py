@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Enum as PgEnum
+from sqlalchemy import ForeignKey, Enum as PgEnum, Integer, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -16,5 +16,7 @@ class MissionEvent(Base):
     event_type: Mapped[MissionEventType] = mapped_column(PgEnum(MissionEventType), nullable=False)
     chance: Mapped[int] = mapped_column(default=10, server_default="10")  # базовый шанс события в %
     description: Mapped[str] = mapped_column(default="", server_default="")  # текст описания события
+    parameters: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     mission: Mapped["Mission"] = relationship(back_populates="events")
