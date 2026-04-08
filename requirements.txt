@@ -5,3 +5,8 @@ sqlalchemy[asyncio]
 pydantic
 fastapi
 asyncpg
+
+# Dev / linting
+black
+ruff
+isort
