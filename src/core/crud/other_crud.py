@@ -10,6 +10,9 @@ from .base_crud import CRUDBase
 # 🔹 Character CRUD
 # ---------------------------------------------------
 class CRUDCharacter(CRUDBase[Character]):
+    def __init__(self):
+        super().__init__(Character)
+
     async def list_with_equipment(self, session: AsyncSession) -> List[Character]:
         result = await session.execute(
             select(Character).options(selectinload(Character.weapons), selectinload(Character.tools))
@@ -20,6 +23,9 @@ class CRUDCharacter(CRUDBase[Character]):
 # 🔹 Weapon CRUD
 # ---------------------------------------------------
 class CRUDWeapon(CRUDBase[Weapon]):
+    def __init__(self):
+        super().__init__(Weapon)
+
     async def list_by_owner(self, session: AsyncSession, owner_id: int) -> List[Weapon]:
         result = await session.execute(select(Weapon).where(Weapon.owner_id == owner_id))
         return result.scalars().all()
@@ -28,6 +34,9 @@ class CRUDWeapon(CRUDBase[Weapon]):
 # 🔹 Tool CRUD
 # ---------------------------------------------------
 class CRUDTool(CRUDBase[Tool]):
+    def __init__(self):
+        super().__init__(Tool)
+
     async def list_by_owner(self, session: AsyncSession, owner_id: int) -> List[Tool]:
         result = await session.execute(select(Tool).where(Tool.owner_id == owner_id))
         return result.scalars().all()
@@ -36,6 +45,8 @@ class CRUDTool(CRUDBase[Tool]):
 # 🔹 MissionEvent CRUD
 # ---------------------------------------------------
 class CRUDMissionEvent(CRUDBase[MissionEvent]):
+    def __init__(self):
+        super().__init__(MissionEvent)
     async def list_by_mission(self, session: AsyncSession, mission_id: int) -> List[MissionEvent]:
         result = await session.execute(select(MissionEvent).where(MissionEvent.mission_id == mission_id))
         return result.scalars().all()
@@ -44,6 +55,8 @@ class CRUDMissionEvent(CRUDBase[MissionEvent]):
 # 🔹 Mission CRUD
 # ---------------------------------------------------
 class CRUDMission(CRUDBase[Mission]):
+    def __init__(self):
+        super().__init__(Mission)
     async def list_with_events(self, session: AsyncSession) -> List[Mission]:
         result = await session.execute(select(Mission).options(selectinload(Mission.events)))
         return result.scalars().all()
