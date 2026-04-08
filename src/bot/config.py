@@ -1,4 +1,8 @@
-from pydantic import BaseSettings
+try:
+    # pydantic v2 moved BaseSettings to pydantic-settings
+    from pydantic_settings import BaseSettings  # type: ignore
+except Exception:
+    from pydantic import BaseSettings  # type: ignore
 
 
 class BotSettings(BaseSettings):
