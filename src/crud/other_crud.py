@@ -28,6 +28,12 @@ class CRUDCharacter(CRUDBase[Character]):
             select(Character).options(selectinload(Character.weapons), selectinload(Character.tools))
         )
         return result.scalars().all()
+    
+    async def list_by_user_with_equipment(self, session: AsyncSession, user_id: int) -> List[Character]:
+        result = await session.execute(
+            select(Character).where(Character.user_id == user_id).options(selectinload(Character.weapons), selectinload(Character.tools))
+        )
+        return result.scalars().all()
 
 # ---------------------------------------------------
 # 🔹 Weapon CRUD

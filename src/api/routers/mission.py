@@ -71,3 +71,10 @@ async def start_mission(mission_id: int, body: UserMissionStart, session: AsyncS
     from crud.other_crud import user_mission_crud
     um = await user_mission_crud.get(session, res["mission_id"])
     return um
+
+
+@router.get("/", response_model=list[MissionRead])
+async def list_missions(session: AsyncSession = Depends(get_db)):
+    from crud.other_crud import mission_crud
+    missions = await mission_crud.list_with_events(session)
+    return missions

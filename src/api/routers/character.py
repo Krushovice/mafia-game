@@ -53,3 +53,14 @@ async def update_character(
     if not updated:
         raise HTTPException(status_code=404, detail="Character not found")
     return updated
+
+
+@router.get("/", response_model=list[CharacterRead])
+async def list_characters(
+    session: AsyncSession = Depends(get_db),
+    current_user = Depends(lambda db=Depends(get_db): get_current_user(db=db)),
+):
+    # list current user's characters with equipment
+    from crud.other_crud import character_crud
+    chars = await character_crud.list_by_user_with_equipment(session, current_user.id)
+    return chars

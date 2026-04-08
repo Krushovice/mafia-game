@@ -34,8 +34,9 @@ def do_run_migrations(connection):
 async def run_async_migrations():
     """Основной async runner для Alembic + asyncpg."""
     # создаём engine прямо из settings
+    # settings.db.url is a Pydantic PostgresDsn object; convert to str for SQLAlchemy
     connectable: AsyncEngine = create_async_engine(
-        settings.db.url,
+        str(settings.db.url),
         poolclass=pool.NullPool,
     )
 
