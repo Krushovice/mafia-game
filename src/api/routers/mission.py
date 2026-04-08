@@ -13,8 +13,8 @@ async def create_mission(
     data: MissionCreate,
     session: AsyncSession = Depends(get_db),
 ):
-    service = MissionService()
-    return await service.create_mission(session=session, data)
+    service = MissionService(session)
+    return await service.create(data.model_dump())
 
 
 @router.get("/{mission_id}", response_model=MissionRead)
@@ -23,7 +23,7 @@ async def get_mission(
     session: AsyncSession = Depends(get_db),
 ):
     service = MissionService(session)
-    mission = await service.get_mission(mission_id)
+    mission = await service.get(mission_id)
 
     if not mission:
         raise HTTPException(status_code=404, detail="Mission not found")
