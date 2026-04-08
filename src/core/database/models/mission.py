@@ -25,10 +25,14 @@ class Mission(Base):
     reward_influence: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     difficulty: Mapped["MissionDifficulty"] = mapped_column(
-        Enum("MissionDifficulty", native_enum=False, length=32),
+        Enum(
+            MissionDifficulty,
+            native_enum=False,
+            length=32,
+        ),
         nullable=False,
-        default="easy",
-        server_default="easy"
+        default=MissionDifficulty.EASY,
+        server_default="easy",
     )
 
     slots: Mapped[int] = mapped_column(Integer, default=1, server_default="1")

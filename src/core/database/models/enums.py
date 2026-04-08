@@ -15,7 +15,9 @@ class CharacterTrait(str, enum.Enum):
 
 class MissionStatus(str, enum.Enum):
     PENDING = "pending"
+    IN_PROGRESS = "in_progress"
     SUCCESS = "success"
+    COMPLETED = "completed"
     FAILED = "failed"
 
 class MissionEventType(str, enum.Enum):

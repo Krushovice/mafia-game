@@ -24,15 +24,18 @@ class Character(Base):
             CharacterRole,
             native_enum=False,
             length=32,
-        )
+        ),
+        default=CharacterRole.THUG,
     )
     trait: Mapped[CharacterTrait] = mapped_column(
         Enum(
             CharacterTrait,
             native_enum=False,
             length=32,
-        )
+        ),
+        default=CharacterTrait.QUIET,
     )
+    
 
     power: Mapped[int] = mapped_column(Integer)
     agility: Mapped[int] = mapped_column(Integer)

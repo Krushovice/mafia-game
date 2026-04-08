@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from random import randint
 from typing import List
+from sqlalchemy import select
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,10 +32,16 @@ class MissionService(BaseService):
     # -------------------------
 
     async def calculate_character_effective_stats(self, character: Character):
+        # load equipment explicitly to avoid lazy-loading outside greenlet
+        from core.database.models import Weapon, Tool
+
+        weapons = (await self.session.execute(select(Weapon).where(Weapon.owner_id == character.id))).scalars().all()
+        tools = (await self.session.execute(select(Tool).where(Tool.owner_id == character.id))).scalars().all()
+
         return {
-            "power": character.power + sum(w.bonus_power for w in character.weapons),
-            "intellect": character.intellect + sum(t.bonus_intellect for t in character.tools),
-            "agility": character.agility + sum(t.bonus_agility for t in character.tools),
+            "power": character.power + sum(w.bonus_power for w in weapons),
+            "intellect": character.intellect + sum(t.bonus_intellect for t in tools),
+            "agility": character.agility + sum(t.bonus_agility for t in tools),
         }
 
     # -------------------------
@@ -89,8 +96,8 @@ class MissionService(BaseService):
         if not possible:
             return {"success": False, "message": msg}
 
-        # Выполняем изменения в рамках транзакции
-        async with self.session.begin():
+        # Выполняем изменения в рамках транзакции (start only if no active transaction)
+        if self.session.in_transaction():
             # блокируем персонажей
             for c in characters:
                 c.is_busy = True
@@ -101,7 +108,7 @@ class MissionService(BaseService):
                 {
                     "user_id": user_id,
                     "mission_id": mission_id,
-                    "status": MissionStatus.PENDING,
+                    "status": MissionStatus.IN_PROGRESS,
                     "started_at": datetime.utcnow(),
                     "ends_at": datetime.utcnow() + timedelta(seconds=mission.duration),
                     "success_chance": 100,
@@ -115,6 +122,32 @@ class MissionService(BaseService):
             # Связываем персонажей с миссией
             for idx, c in enumerate(characters):
                 await self.mission_character_crud.create_link(self.session, user_mission.id, c.id, idx, commit=False)
+        else:
+            async with self.session.begin():
+                # блокируем персонажей
+                for c in characters:
+                    c.is_busy = True
+
+                # Создаём запись UserMission (отложенно, без отдельного коммита)
+                user_mission = await self.user_mission_crud.create(
+                    self.session,
+                    {
+                        "user_id": user_id,
+                        "mission_id": mission_id,
+                        "status": MissionStatus.PENDING,
+                        "started_at": datetime.utcnow(),
+                        "ends_at": datetime.utcnow() + timedelta(seconds=mission.duration),
+                        "success_chance": 100,
+                    },
+                    commit=False,
+                )
+
+                # flush to get generated ids
+                await self.session.flush()
+
+                # Связываем персонажей с миссией
+                for idx, c in enumerate(characters):
+                    await self.mission_character_crud.create_link(self.session, user_mission.id, c.id, idx, commit=False)
 
         return {
             "success": True,
@@ -143,9 +176,17 @@ class MissionService(BaseService):
 
         mission: Mission = user_mission.mission
 
-        # персонажи
-        # получаем реальных персонажей
-        characters = [mc.character for mc in user_mission.characters]
+        # персонажи: загружаем привязки и связанные персонажи явным запросом
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        from core.database.models import MissionCharacter
+
+        mchars = (
+            await self.session.execute(
+                select(MissionCharacter).options(selectinload(MissionCharacter.character)).where(MissionCharacter.user_mission_id == user_mission_id)
+            )
+        ).scalars().all()
+        characters = [mc.character for mc in mchars]
 
         # события
         events = await self.event_crud.list_by_mission(self.session, mission.id)
@@ -179,13 +220,21 @@ class MissionService(BaseService):
                     event_results.append(f"{event.description} | Повезло")
 
         # В транзакции: освобождаем персонажей и обновляем статус
-        async with self.session.begin():
+        if self.session.in_transaction():
             for c in characters:
                 c.is_busy = False
 
             user_mission.status = (
                 MissionStatus.COMPLETED if success else MissionStatus.FAILED
             )
+        else:
+            async with self.session.begin():
+                for c in characters:
+                    c.is_busy = False
+
+                user_mission.status = (
+                    MissionStatus.COMPLETED if success else MissionStatus.FAILED
+                )
 
             # TODO: тут позже добавим начисление ресурсов пользователю
 

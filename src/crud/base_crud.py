@@ -13,7 +13,20 @@ class CRUDBase(Generic[ModelType]):
         return await self.create(session, obj_in, commit=True)
 
     async def create(self, session: AsyncSession, obj_in: dict, commit: bool = True) -> ModelType:
-        obj = self.model(**obj_in)
+        # coerce string values into Enum members when model column is Enum
+        data = dict(obj_in)
+        for field, value in list(data.items()):
+            if isinstance(value, str) and hasattr(self.model, field):
+                try:
+                    col = getattr(self.model, field).property.columns[0]
+                    col_type = getattr(col, 'type', None)
+                    enum_cls = getattr(col_type, 'enum_class', None)
+                    if enum_cls is not None:
+                        data[field] = enum_cls(value)
+                except Exception:
+                    pass
+
+        obj = self.model(**data)
         session.add(obj)
         if commit:
             await session.commit()
@@ -35,7 +48,19 @@ class CRUDBase(Generic[ModelType]):
         obj = await self.get(session, obj_id)
         if not obj:
             return None
-        for field, value in obj_in.items():
+        # coerce enum strings like in create
+        data = dict(obj_in)
+        for field, value in list(data.items()):
+            if isinstance(value, str) and hasattr(self.model, field):
+                try:
+                    col = getattr(self.model, field).property.columns[0]
+                    col_type = getattr(col, 'type', None)
+                    enum_cls = getattr(col_type, 'enum_class', None)
+                    if enum_cls is not None:
+                        data[field] = enum_cls(value)
+                except Exception:
+                    pass
+        for field, value in data.items():
             setattr(obj, field, value)
         if commit:
             await session.commit()
