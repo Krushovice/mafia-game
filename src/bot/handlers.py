@@ -68,5 +68,78 @@ async def start_bot(token: str):
             except Exception:
                 logger.exception("Error fetching missions")
                 await message.reply("Ошибка при запросе миссий.")
+            
+            @dp.message(Command(commands=["my_missions"]))
+            async def cmd_my_missions(message: types.Message):
+                tg_id = message.from_user.id
+                headers = {"X-Telegram-Id": str(tg_id), "X-Username": message.from_user.username or ""}
+                try:
+                    r = await client.get(f"{settings.api_url}/user_missions", headers=headers)
+                    if r.status_code == 200:
+                        ums = r.json()
+                        if not ums:
+                            await message.reply("У вас нет активных миссий.")
+                            return
+                        lines = []
+                        for u in ums:
+                            lines.append(f"{u.get('id')}: mission={u.get('mission_id')} status={u.get('status')}")
+                        await message.reply("\n".join(lines))
+                    else:
+                        await message.reply("Не удалось получить ваши миссии.")
+                except Exception:
+                    logger.exception("Error fetching user missions")
+                    await message.reply("Ошибка при запросе миссий.")
 
+            @dp.message(Command(commands=["start_mission"]))
+            async def cmd_start_mission(message: types.Message):
+                # Usage: /start_mission <mission_id> <char_id1,char_id2,...>
+                parts = (message.text or "").split()
+                if len(parts) < 3:
+                    await message.reply("Использование: /start_mission <mission_id> <char_id1,char_id2,...>")
+                    return
+                try:
+                    mission_id = int(parts[1])
+                except ValueError:
+                    await message.reply("mission_id должен быть числом")
+                    return
+                rest = " ".join(parts[2:])
+                try:
+                    char_ids = [int(x) for x in rest.replace(",", " ").split() if x]
+                except ValueError:
+                    await message.reply("character ids должны быть числами, разделёнными запятыми или пробелами")
+                    return
+                headers = {"X-Telegram-Id": str(message.from_user.id), "X-Username": message.from_user.username or ""}
+                payload = {"character_ids": char_ids}
+                try:
+                    r = await client.post(f"{settings.api_url}/missions/{mission_id}/start", json=payload, headers=headers)
+                    if r.status_code in (200, 201):
+                        await message.reply(f"Миссия запущена: {r.json()}")
+                    else:
+                        await message.reply(f"Не удалось запустить миссию: {r.status_code} {r.text}")
+                except Exception:
+                    logger.exception("Error starting mission")
+                    await message.reply("Ошибка при запуске миссии.")
+
+            @dp.message(Command(commands=["complete_mission"]))
+            async def cmd_complete_mission(message: types.Message):
+                # Usage: /complete_mission <user_mission_id>
+                parts = (message.text or "").split()
+                if len(parts) < 2:
+                    await message.reply("Использование: /complete_mission <user_mission_id>")
+                    return
+                try:
+                    um_id = int(parts[1])
+                except ValueError:
+                    await message.reply("user_mission_id должен быть числом")
+                    return
+                headers = {"X-Telegram-Id": str(message.from_user.id), "X-Username": message.from_user.username or ""}
+                try:
+                    r = await client.post(f"{settings.api_url}/user_missions/{um_id}/complete", headers=headers)
+                    if r.status_code == 200:
+                        await message.reply(f"Миссия завершена: {r.json()}")
+                    else:
+                        await message.reply(f"Не удалось завершить миссию: {r.status_code} {r.text}")
+                except Exception:
+                    logger.exception("Error completing mission")
+                    await message.reply("Ошибка при завершении миссии.")
         await dp.start_polling(bot)
