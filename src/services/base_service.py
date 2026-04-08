@@ -15,7 +15,7 @@ class BaseService:
         return await self.crud.get(self.session, obj_id)
 
     async def get_all(self):
-        return await self.crud.get_multi(self.session)
+        return await self.crud.list(self.session)
 
     async def update(self, obj_id: int, data: dict):
         return await self.crud.update(self.session, obj_id, data)

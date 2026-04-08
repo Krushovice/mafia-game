@@ -4,37 +4,27 @@ from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from services.base import BaseService
-from crud.mission import mission_crud
-from crud.other_crud import CRUDMissionEvent, User
-from crud.user_mission import user_mission_crud
-
-from models import (
-    Mission,
-    Character,
-    UserMission,
-    MissionStatus,
-    MissionEventType,
+from .base_service import BaseService
+from crud.other_crud import (
+    character_crud,
+    mission_crud,
+    mission_event_crud,
+    user_mission_crud,
+    mission_character_crud,
 )
+from core.database.models import Mission, Character, UserMission
+from core.database.models.enums import MissionStatus, MissionEventType
 
-# Инициализация CRUD
-character_crud = CRUDCharacter(Character)
-mission_crud = CRUDMission(Mission)
-event_crud = CRUDMissionEvent(MissionEvent)
 
 class MissionService(BaseService):
-    """
-    Сервис миссий:
-    - запуск миссии
-    - завершение миссии
-    - расчёт характеристик
-    - обработка событий
-    """
+    """Service for mission lifecycle: start, complete, event processing."""
 
     def __init__(self, session: AsyncSession):
         super().__init__(session, mission_crud)
+        self.character_crud = character_crud
         self.event_crud = mission_event_crud
         self.user_mission_crud = user_mission_crud
+        self.mission_character_crud = mission_character_crud
 
     # -------------------------
     # ХАРАКТЕРИСТИКИ
@@ -99,28 +89,38 @@ class MissionService(BaseService):
         if not possible:
             return {"success": False, "message": msg}
 
-        # блокируем персонажей
-        for c in characters:
-            c.is_busy = True
+        # Выполняем изменения в рамках транзакции
+        async with self.session.begin():
+            # блокируем персонажей
+            for c in characters:
+                c.is_busy = True
 
-        user_mission = await self.user_mission_crud.create(
-            self.session,
-            {
-                "user_id": user_id,
-                "mission_id": mission_id,
-                "status": MissionStatus.IN_PROGRESS,
-                "started_at": datetime.utcnow(),
-                "completed_at": datetime.utcnow() + timedelta(seconds=mission.duration),
-            },
-        )
+            # Создаём запись UserMission (отложенно, без отдельного коммита)
+            user_mission = await self.user_mission_crud.create(
+                self.session,
+                {
+                    "user_id": user_id,
+                    "mission_id": mission_id,
+                    "status": MissionStatus.PENDING,
+                    "started_at": datetime.utcnow(),
+                    "ends_at": datetime.utcnow() + timedelta(seconds=mission.duration),
+                    "success_chance": 100,
+                },
+                commit=False,
+            )
 
-        await self.session.commit()
+            # flush to get generated ids
+            await self.session.flush()
+
+            # Связываем персонажей с миссией
+            for idx, c in enumerate(characters):
+                await self.mission_character_crud.create_link(self.session, user_mission.id, c.id, idx, commit=False)
 
         return {
             "success": True,
             "message": "Миссия началась",
             "mission_id": user_mission.id,
-            "ends_at": user_mission.completed_at,
+            "ends_at": user_mission.ends_at,
         }
 
     # -------------------------
@@ -138,16 +138,17 @@ class MissionService(BaseService):
         if user_mission.status != MissionStatus.IN_PROGRESS:
             return {"success": False, "message": "Миссия уже завершена"}
 
-        if datetime.utcnow() < user_mission.completed_at:
+        if datetime.utcnow() < user_mission.ends_at:
             return {"success": False, "message": "Миссия ещё выполняется"}
 
         mission: Mission = user_mission.mission
 
         # персонажи
-        characters = user_mission.characters
+        # получаем реальных персонажей
+        characters = [mc.character for mc in user_mission.characters]
 
         # события
-        events = await self.event_crud.get_by_mission(self.session, mission.id)
+        events = await self.event_crud.list_by_mission(self.session, mission.id)
 
         event_results = []
         success = True
@@ -177,18 +178,16 @@ class MissionService(BaseService):
                 else:
                     event_results.append(f"{event.description} | Повезло")
 
-        # освобождаем персонажей
-        for c in characters:
-            c.is_busy = False
+        # В транзакции: освобождаем персонажей и обновляем статус
+        async with self.session.begin():
+            for c in characters:
+                c.is_busy = False
 
-        # обновляем статус
-        user_mission.status = (
-            MissionStatus.COMPLETED if success else MissionStatus.FAILED
-        )
+            user_mission.status = (
+                MissionStatus.COMPLETED if success else MissionStatus.FAILED
+            )
 
-        # TODO: тут позже добавим начисление ресурсов пользователю
-
-        await self.session.commit()
+            # TODO: тут позже добавим начисление ресурсов пользователю
 
         return {
             "success": success,
