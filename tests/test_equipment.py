@@ -1,6 +1,6 @@
 import pytest
 
-from crud.other_crud import character_crud, weapon_crud, tool_crud, mission_crud
+from crud.other_crud import character_crud, mission_crud, tool_crud, weapon_crud
 
 
 @pytest.mark.asyncio

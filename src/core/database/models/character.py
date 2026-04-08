@@ -1,15 +1,17 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String, Integer, Boolean, Enum, DateTime, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
 if TYPE_CHECKING:
     from .user import User
     from .mission_character import MissionCharacter
     from .weapon import Weapon
     from .tool import Tool
+
 from .enums import CharacterRole, CharacterTrait
 
 

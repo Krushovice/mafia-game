@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.db_helper import db_helper
-from api.routers import mission as mission_router
 from api.routers import character as character_router
+from api.routers import equipment as equipment_router
+from api.routers import mission as mission_router
 from api.routers import user as user_router
 from api.routers import user_missions as user_missions_router
-from api.routers import equipment as equipment_router
+from core.database.db_helper import db_helper
 
 app = FastAPI()
 

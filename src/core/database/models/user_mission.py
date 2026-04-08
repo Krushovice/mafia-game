@@ -1,10 +1,11 @@
-from typing import TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, DateTime, Integer, Enum, func, text, JSON, Index
+from sqlalchemy import JSON, DateTime, Enum, ForeignKey, Index, Integer, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
 if TYPE_CHECKING:
     from .user import User
     from .mission import Mission

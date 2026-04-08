@@ -4,9 +4,10 @@ from sqlalchemy import ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
 if TYPE_CHECKING:
-    from .user_mission import UserMission
     from .character import Character
+    from .user_mission import UserMission
 
 class MissionCharacter(Base):
     __tablename__ = "mission_characters"

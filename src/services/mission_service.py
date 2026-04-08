@@ -1,20 +1,21 @@
 from datetime import datetime, timedelta
 from random import randint
 from typing import List
-from sqlalchemy import select
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .base_service import BaseService
+from core.database.models import Character, Mission, UserMission
+from core.database.models.enums import MissionEventType, MissionStatus
 from crud.other_crud import (
     character_crud,
+    mission_character_crud,
     mission_crud,
     mission_event_crud,
     user_mission_crud,
-    mission_character_crud,
 )
-from core.database.models import Mission, Character, UserMission
-from core.database.models.enums import MissionStatus, MissionEventType
+
+from .base_service import BaseService
 
 
 class MissionService(BaseService):
@@ -33,7 +34,7 @@ class MissionService(BaseService):
 
     async def calculate_character_effective_stats(self, character: Character):
         # load equipment explicitly to avoid lazy-loading outside greenlet
-        from core.database.models import Weapon, Tool
+        from core.database.models import Tool, Weapon
 
         weapons = (await self.session.execute(select(Weapon).where(Weapon.owner_id == character.id))).scalars().all()
         tools = (await self.session.execute(select(Tool).where(Tool.owner_id == character.id))).scalars().all()
@@ -179,6 +180,7 @@ class MissionService(BaseService):
         # персонажи: загружаем привязки и связанные персонажи явным запросом
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
+
         from core.database.models import MissionCharacter
 
         mchars = (

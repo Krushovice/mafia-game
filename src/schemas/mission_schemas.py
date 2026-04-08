@@ -1,5 +1,7 @@
 from pydantic import BaseModel
+
 from core.database.models.enums import MissionDifficulty
+
 
 class MissionEventRead(BaseModel):
     id: int

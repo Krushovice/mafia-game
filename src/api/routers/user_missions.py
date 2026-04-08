@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies import get_db, get_current_user
-from services.mission_service import MissionService
+from api.dependencies import get_current_user, get_db
 from crud.other_crud import user_mission_crud
 from schemas.user_mission_schemas import UserMissionRead
+from services.mission_service import MissionService
 
 router = APIRouter(prefix="/user_missions", tags=["UserMissions"])
 

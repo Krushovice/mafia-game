@@ -2,8 +2,9 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .base_service import BaseService
 from crud.other_crud import user_crud, user_resource_crud
+
+from .base_service import BaseService
 
 
 class UserService(BaseService):

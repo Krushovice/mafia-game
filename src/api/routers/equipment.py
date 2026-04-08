@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_db
-from schemas import WeaponRead, ToolRead
-from schemas.weapon_tool_schemas import WeaponCreate, ToolCreate
-from crud.other_crud import weapon_crud, tool_crud
+from crud.other_crud import tool_crud, weapon_crud
+from schemas import ToolRead, WeaponRead
+from schemas.weapon_tool_schemas import ToolCreate, WeaponCreate
 
 router = APIRouter(prefix="/equipment", tags=["Equipment"])
 

@@ -1,9 +1,10 @@
-import pytest
 from datetime import datetime, timedelta
 
+import pytest
+
+from crud.other_crud import character_crud, mission_crud, user_mission_crud
 from services.mission_service import MissionService
 from services.user_service import UserService
-from crud.other_crud import mission_crud, character_crud, user_mission_crud
 
 
 @pytest.mark.asyncio

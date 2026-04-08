@@ -1,20 +1,23 @@
 from typing import List
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from core.database.models import (
     Character,
-    Weapon,
-    Tool,
     Mission,
-    MissionEvent,
-    UserMission,
     MissionCharacter,
+    MissionEvent,
+    Tool,
     User,
+    UserMission,
     UserResource,
+    Weapon,
 )
+
 from .base_crud import CRUDBase
+
 
 # ---------------------------------------------------
 # 🔹 Character CRUD

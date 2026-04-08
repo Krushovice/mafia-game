@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 from core.database.models.enums import MissionEventType
 
+
 class MissionEventCreate(BaseModel):
     mission_id: int
     event_type: MissionEventType

@@ -1,6 +1,7 @@
 import pytest
-from services.user_service import UserService
+
 from crud.other_crud import user_resource_crud
+from services.user_service import UserService
 
 
 @pytest.mark.asyncio

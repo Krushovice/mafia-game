@@ -1,9 +1,9 @@
 from typing import AsyncGenerator
 
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.db_helper import db_helper
-from fastapi import Header, HTTPException, Depends
 from services.user_service import UserService
 
 

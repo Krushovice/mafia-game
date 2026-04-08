@@ -1,12 +1,17 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Enum as PgEnum, Integer, JSON
+from sqlalchemy import JSON
+from sqlalchemy import Enum as PgEnum
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
 if TYPE_CHECKING:
     from .mission import Mission
+
 from .enums import MissionEventType
+
 
 class MissionEvent(Base):
     __tablename__ = "mission_events"

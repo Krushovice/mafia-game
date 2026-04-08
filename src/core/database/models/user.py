@@ -1,14 +1,15 @@
-from typing import TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, String, DateTime, func
+from sqlalchemy import BigInteger, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
 if TYPE_CHECKING:
     from .character import Character
-    from .user_resource import UserResource
     from .user_mission import UserMission
+    from .user_resource import UserResource
 
 class User(Base):
     __tablename__ = "users"

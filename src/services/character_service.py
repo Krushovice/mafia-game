@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .base_service import BaseService
 from crud.other_crud import character_crud
 from schemas.character_schemas import CharacterCreate
+
+from .base_service import BaseService
 
 
 class CharacterService(BaseService):
