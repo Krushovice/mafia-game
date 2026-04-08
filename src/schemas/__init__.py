@@ -45,3 +45,15 @@ __all__.extend([
 	"UserRead",
 	"UserResourceRead",
 ])
+
+from .user_mission_schemas import (
+	UserMissionRead,
+	UserMissionStart,
+	MissionCharacterRead,
+)
+
+__all__.extend([
+	"UserMissionRead",
+	"UserMissionStart",
+	"MissionCharacterRead",
+])
