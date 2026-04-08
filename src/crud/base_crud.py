@@ -10,10 +10,14 @@ class CRUDBase(Generic[ModelType]):
         self.model = model
 
     async def create(self, session: AsyncSession, obj_in: dict) -> ModelType:
+        return await self.create(session, obj_in, commit=True)
+
+    async def create(self, session: AsyncSession, obj_in: dict, commit: bool = True) -> ModelType:
         obj = self.model(**obj_in)
         session.add(obj)
-        await session.commit()
-        await session.refresh(obj)
+        if commit:
+            await session.commit()
+            await session.refresh(obj)
         return obj
 
     async def get(self, session: AsyncSession, obj_id: int) -> ModelType | None:
@@ -25,19 +29,27 @@ class CRUDBase(Generic[ModelType]):
         return result.scalars().all()
 
     async def update(self, session: AsyncSession, obj_id: int, obj_in: dict) -> ModelType | None:
+        return await self.update(session, obj_id, obj_in, commit=True)
+
+    async def update(self, session: AsyncSession, obj_id: int, obj_in: dict, commit: bool = True) -> ModelType | None:
         obj = await self.get(session, obj_id)
         if not obj:
             return None
         for field, value in obj_in.items():
             setattr(obj, field, value)
-        await session.commit()
-        await session.refresh(obj)
+        if commit:
+            await session.commit()
+            await session.refresh(obj)
         return obj
 
     async def delete(self, session: AsyncSession, obj_id: int) -> bool:
+        return await self.delete(session, obj_id, commit=True)
+
+    async def delete(self, session: AsyncSession, obj_id: int, commit: bool = True) -> bool:
         obj = await self.get(session, obj_id)
         if not obj:
             return False
         await session.delete(obj)
-        await session.commit()
+        if commit:
+            await session.commit()
         return True
