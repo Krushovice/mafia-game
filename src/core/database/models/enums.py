@@ -20,12 +20,22 @@ class MissionStatus(str, enum.Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
+
 class MissionEventType(str, enum.Enum):
     POLICE_RAID = "police_raid"
     COMPETITOR_ATTACK = "competitor_attack"
     RANDOM_LUCK = "random_luck"
 
+
 class MissionDifficulty(str, enum.Enum):
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
+
+
+class MissionStatType(str, enum.Enum):
+    """Главный стат миссии — от него зависит награда."""
+
+    FORCE = "force"  # сила + оружие
+    STEALTH = "stealth"  # ловкость + инструменты
+    DIPLOMACY = "diplomacy"  # интеллект

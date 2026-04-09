@@ -29,6 +29,9 @@ services:
     command: uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - APP_CONFIG__DB__URL=postgresql+asyncpg://krushovice:9874123Kr@pg:5432/mafia
+      - APP_CONFIG__TMA__ENABLED=true
+      - APP_CONFIG__TMA__BOT_TOKEN=${BOT_TELEGRAM_TOKEN}
+      - APP_CONFIG__TMA__URL=${TMA_URL:-http://localhost:3000}
     ports:
       - "8000:8000"
     depends_on:

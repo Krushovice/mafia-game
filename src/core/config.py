@@ -15,6 +15,12 @@ class BotConfig(BaseModel):
     api_url: str = "http://localhost:8000"
 
 
+class TMAConfig(BaseModel):
+    enabled: bool = False
+    bot_token: str = ""  # for initData validation (same as bot token)
+    url: str = "http://localhost:3000"  # TMA frontend URL
+
+
 class UvicornConfig(BaseModel):
     host: str = "0.0.0.0"
     port: int = 8000
@@ -26,6 +32,10 @@ class FastAPIConfig(BaseModel):
     title: str = "Mafia Game API"
     debug: bool = False
     root_path: str = ""
+    cors_origins: list[str] = [
+        "https://web.telegram.org",
+        "https://*.web.telegram.org",
+    ]
 
 
 class LoggingConfig(BaseModel):
@@ -46,10 +56,12 @@ class Settings(BaseSettings):
         env_prefix="APP_CONFIG__",
         env_file_encoding="utf-8",
         validate_default=False,
+        extra="ignore",  # ignore bot-specific vars like BOT_TELEGRAM_TOKEN, TMA_URL
     )
 
     db: DataBaseConfig
     bot: BotConfig | None = None
+    tma: TMAConfig = TMAConfig()
     uvicorn: UvicornConfig = UvicornConfig()
     api: FastAPIConfig = FastAPIConfig()
     logging: LoggingConfig = LoggingConfig()

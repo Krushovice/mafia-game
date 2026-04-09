@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.routers import character as character_router
@@ -6,9 +7,23 @@ from api.routers import equipment as equipment_router
 from api.routers import mission as mission_router
 from api.routers import user as user_router
 from api.routers import user_missions as user_missions_router
+from core.config import settings
 from core.database.db_helper import db_helper
 
-app = FastAPI()
+app = FastAPI(
+    title=settings.api.title,
+    debug=settings.api.debug,
+    root_path=settings.api.root_path,
+)
+
+# CORS for Telegram WebApp
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.api.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # include routers
 app.include_router(mission_router.router)

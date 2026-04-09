@@ -23,11 +23,7 @@ class UserMission(Base):
     mission_id: Mapped[int] = mapped_column(ForeignKey("missions.id"))
 
     status: Mapped[MissionStatus] = mapped_column(
-        Enum(
-            MissionStatus,
-            native_enum=False,
-            length=32
-        ),
+        Enum(MissionStatus, native_enum=False, length=32),
         default=MissionStatus.PENDING,
         server_default=text(f"'{MissionStatus.PENDING.value}'"),
     )
@@ -36,15 +32,28 @@ class UserMission(Base):
     ends_at: Mapped[datetime] = mapped_column(DateTime)
 
     success_chance: Mapped[int] = mapped_column(Integer)
-    result_reward: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # Рассчитанные награды (сохраняются при старте миссии)
+    reward_money: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, default=0, server_default="0"
+    )
+    reward_influence: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, default=0, server_default="0"
+    )
+    wanted_increase: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, default=0, server_default="0"
+    )
+
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, server_default=func.now())
-
-    __table_args__ = (
-        Index("ix_user_missions_ends_at_status", "ends_at", "status"),
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, server_default=func.now()
     )
+
+    __table_args__ = (Index("ix_user_missions_ends_at_status", "ends_at", "status"),)
 
     user: Mapped["User"] = relationship(back_populates="missions")
     mission: Mapped["Mission"] = relationship(back_populates="user_missions")
-    characters: Mapped[list["MissionCharacter"]] = relationship(back_populates="user_mission")
+    characters: Mapped[list["MissionCharacter"]] = relationship(
+        back_populates="user_mission"
+    )

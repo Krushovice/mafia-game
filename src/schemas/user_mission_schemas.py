@@ -23,6 +23,9 @@ class UserMissionRead(BaseModel):
     started_at: datetime | None
     ends_at: datetime | None
     success_chance: int | None
+    reward_money: int | None
+    reward_influence: int | None
+    wanted_increase: int | None
     result: dict | None = None
     characters: list[MissionCharacterRead] = []
 
