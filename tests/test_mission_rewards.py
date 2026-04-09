@@ -1,6 +1,6 @@
 """Tests for mission stat types, reward calculations, and equipment requirements."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -70,7 +70,7 @@ async def test_force_mission_reward(db_session):
     # Complete and verify resources
     ums = await user_mission_crud.list(db_session)
     um = ums[0]
-    um.ends_at = datetime.utcnow() - timedelta(seconds=1)
+    um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 
     complete_res = await svc.complete_mission(um.id)
@@ -463,7 +463,7 @@ async def test_complete_mission_allocates_resources(db_session):
 
     ums = await user_mission_crud.list(db_session)
     um = ums[0]
-    um.ends_at = datetime.utcnow() - timedelta(seconds=1)
+    um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 
     # Get resources before (refresh from DB)
@@ -527,7 +527,7 @@ async def test_failed_mission_no_reward(db_session):
 
     ums = await user_mission_crud.list(db_session)
     um = ums[0]
-    um.ends_at = datetime.utcnow() - timedelta(seconds=1)
+    um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 
     res_before = await user_resource_crud.get_by_user(db_session, user.id)

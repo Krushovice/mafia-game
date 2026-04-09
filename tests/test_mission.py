@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -27,7 +27,7 @@ async def test_start_and_complete_mission(db_session):
     ums = await user_mission_crud.list(db_session)
     assert len(ums) == 1
     um = ums[0]
-    um.ends_at = datetime.utcnow() - timedelta(seconds=1)
+    um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 
     complete_res = await svc.complete_mission(um.id)

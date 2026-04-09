@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List
 
@@ -224,8 +224,8 @@ class MissionService(BaseService):
                     "user_id": user_id,
                     "mission_id": mission_id,
                     "status": MissionStatus.IN_PROGRESS,
-                    "started_at": datetime.utcnow(),
-                    "ends_at": datetime.utcnow() + timedelta(seconds=mission.duration),
+                    "started_at": datetime.now(timezone.utc),
+                    "ends_at": datetime.now(timezone.utc) + timedelta(seconds=mission.duration),
                     "success_chance": 100,
                     # Сохраняем рассчитанные награды
                     "reward_money": rewards["reward_money"],
@@ -256,8 +256,8 @@ class MissionService(BaseService):
                         "user_id": user_id,
                         "mission_id": mission_id,
                         "status": MissionStatus.IN_PROGRESS,
-                        "started_at": datetime.utcnow(),
-                        "ends_at": datetime.utcnow()
+                        "started_at": datetime.now(timezone.utc),
+                        "ends_at": datetime.now(timezone.utc)
                         + timedelta(seconds=mission.duration),
                         "success_chance": 100,
                         # Сохраняем рассчитанные награды
@@ -300,7 +300,7 @@ class MissionService(BaseService):
         if user_mission.status != MissionStatus.IN_PROGRESS:
             return {"success": False, "message": "Миссия уже завершена"}
 
-        if datetime.utcnow() < user_mission.ends_at:
+        if datetime.now(timezone.utc) < user_mission.ends_at:
             return {"success": False, "message": "Миссия ещё выполняется"}
 
         mission: Mission = user_mission.mission
