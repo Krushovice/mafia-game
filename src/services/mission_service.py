@@ -373,6 +373,27 @@ class MissionService(BaseService):
                 "reward_influence": reward_influence if success else 0,
                 "wanted_increase": wanted_increase,
             }
+
+            # Начисляем ресурсы пользователю
+            if success:
+                resources = await user_resource_crud.get_by_user(
+                    self.session, user_mission.user_id
+                )
+                if resources:
+                    resources.money += reward_money if reward_money else 0
+                    resources.influence += reward_influence if reward_influence else 0
+                    resources.wanted_level += wanted_increase
+                else:
+                    await user_resource_crud.create(
+                        self.session,
+                        {
+                            "user_id": user_mission.user_id,
+                            "money": reward_money if reward_money else 0,
+                            "influence": (reward_influence if reward_influence else 0),
+                            "wanted_level": wanted_increase,
+                        },
+                        commit=False,
+                    )
         else:
             async with self.session.begin():
                 for c in characters:
@@ -391,7 +412,6 @@ class MissionService(BaseService):
 
                 # Начисляем ресурсы пользователю
                 if success:
-                    from crud.other_crud import user_resource_crud
 
                     resources = await user_resource_crud.get_by_user(
                         self.session, user_mission.user_id
