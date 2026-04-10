@@ -23,9 +23,15 @@ class MissionService(BaseService):
     """Service for mission lifecycle: start, complete, event processing."""
 
     # Коэффициенты расчёта наград от главного стата
-    REWARD_MONEY_PER_STAT = 15
+    REWARD_MONEY_PER_STAT = 10  # ~2850 coins за заход (13 миссий mix)
     REWARD_INFLUENCE_PER_STAT = 3
-    WANTED_PER_STAT = 10
+
+    # Wanted increase зависит от сложности миссии
+    WANTED_BY_DIFFICULTY = {
+        "easy": 6,    # ~13 миссий до wanted=80
+        "medium": 8,  # ~10 миссий до wanted=80
+        "hard": 12,   # ~6-7 миссий до wanted=80
+    }
 
     def __init__(self, session: AsyncSession):
         super().__init__(session, mission_crud)
@@ -84,9 +90,9 @@ class MissionService(BaseService):
           - diplomacy → total_intellect
 
         Формула:
-          reward_money = main_stat_value * 15 * reward_multiplier
+          reward_money = main_stat_value * 10 * reward_multiplier
           reward_influence = (main_stat_value // 3) * reward_multiplier
-          wanted_increase = max(1, main_stat_value // 10)
+          wanted_increase = depends on difficulty (easy=6, medium=8, hard=12)
         """
         total_power = 0
         total_intellect = 0
@@ -122,7 +128,7 @@ class MissionService(BaseService):
                 * mission.reward_multiplier
             ),
         )
-        wanted_increase = max(1, main_stat_value // self.WANTED_PER_STAT)
+        wanted_increase = self.WANTED_BY_DIFFICULTY.get(mission.difficulty.value, 6)
 
         return {
             "reward_money": reward_money,
@@ -585,15 +591,16 @@ class MissionService(BaseService):
             return False, "Недостаточно денег для откупа."
 
         if choice.choice_type.value == "talk":
-            # Заговорить зубы — зависит от влияния
+            # Заговорить зубы — базовый шанс * (1 + influence / 100)
+            # При influence=100 → шанс удваивается (20% → 40%)
             if resources and resources.influence >= choice.influence_required:
-                chance = (
-                    choice.success_chance_base
-                    + (resources.influence - choice.influence_required) * 2
+                chance = int(
+                    choice.success_chance_base * (1 + resources.influence / 100)
                 )
+                chance = min(chance, 95)
                 if randint(1, 100) <= chance:
-                    return True, "Удалось заговорить зубы!"
-                return False, "Не удалось заговорить зубы."
+                    return True, f"Удалось заговорить зубы! (шанс: {chance}%)"
+                return False, f"Не удалось заговорить зубы. (шанс: {chance}%)"
             return False, "Недостаточно влияния."
 
         if choice.choice_type.value == "fight":
@@ -619,12 +626,14 @@ class MissionService(BaseService):
             if weapon_count < 1:
                 return False, "Нет оружия для боя!"
 
-            chance = (
-                choice.success_chance_base + (total_power - choice.power_required) * 2
-            )
+            # Базовый 50% + бонус за избыток силы + бонус за оружие
+            power_diff = total_power - choice.power_required
+            chance = 50 + power_diff * 2 + weapon_count * 3
+            chance = max(10, min(chance, 95))
+
             if randint(1, 100) <= chance:
-                return True, "Отбили атаку!"
-            return False, "Не удалось отбить атаку."
+                return True, f"Отбили атаку! (шанс: {chance}%)"
+            return False, f"Не удалось отбить атаку. (шанс: {chance}%)"
 
         return False, "Неизвестный тип выбора."
 

@@ -3,7 +3,24 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(cat)",
+      "Bash(import *)",
+      "Bash(path *)",
+      "Bash(with)",
+      "Bash(as *)",
+      "Bash(content *)",
+      "Bash(old_talk *)",
+      "Bash(new_talk *)",
+      "Bash(old_talk, *)",
+      "Bash(old_fight_end *)",
+      "Bash(new_fight_end *)",
+      "Bash(old_fight_end, *)",
+      "Bash(f.write)",
+      "Bash(print)",
+      "Bash(pyeof)",
+      "Bash(python3 *)",
+      "Bash(sed *)"
     ]
   },
   "$version": 3

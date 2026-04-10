@@ -62,10 +62,10 @@ async def test_force_mission_reward(db_session):
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is True
 
-    # Expected: main_stat=30, reward_money=30*15=450, influence=30//3=10, wanted=30//10=3
-    assert res["rewards"]["reward_money"] == 450
+    # medium: wanted=8, money=30*10=300
+    assert res["rewards"]["reward_money"] == 300
     assert res["rewards"]["reward_influence"] == 10
-    assert res["rewards"]["wanted_increase"] == 3
+    assert res["rewards"]["wanted_increase"] == 8
 
     # Complete and verify resources
     ums = await user_mission_crud.list(db_session)
@@ -75,9 +75,9 @@ async def test_force_mission_reward(db_session):
 
     complete_res = await svc.complete_mission(um.id)
     assert complete_res["success"] is True
-    assert complete_res["reward_money"] == 450
+    assert complete_res["reward_money"] == 300
     assert complete_res["reward_influence"] == 10
-    assert complete_res["wanted_increase"] == 3
+    assert complete_res["wanted_increase"] == 8
 
 
 @pytest.mark.asyncio
@@ -121,10 +121,10 @@ async def test_stealth_mission_reward(db_session):
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is True
 
-    # Expected: main_stat=25, reward_money=25*15=375, influence=25//3=8, wanted=25//10=2
-    assert res["rewards"]["reward_money"] == 375
+    # medium: wanted=8, money=25*10=250
+    assert res["rewards"]["reward_money"] == 250
     assert res["rewards"]["reward_influence"] == 8
-    assert res["rewards"]["wanted_increase"] == 2
+    assert res["rewards"]["wanted_increase"] == 8
 
 
 @pytest.mark.asyncio
@@ -168,10 +168,10 @@ async def test_diplomacy_mission_reward(db_session):
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is True
 
-    # Expected: main_stat=40, reward_money=40*15=600, influence=40//3=13, wanted=40//10=4
-    assert res["rewards"]["reward_money"] == 600
+    # hard: wanted=12, money=40*10=400
+    assert res["rewards"]["reward_money"] == 400
     assert res["rewards"]["reward_influence"] == 13
-    assert res["rewards"]["wanted_increase"] == 4
+    assert res["rewards"]["wanted_increase"] == 12
 
 
 @pytest.mark.asyncio
@@ -215,8 +215,8 @@ async def test_reward_multiplier(db_session):
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is True
 
-    # Expected: main_stat=20, reward_money=20*15*2=600, influence=20//3*2=12, wanted=20//10=2 (no multiplier on wanted)
-    assert res["rewards"]["reward_money"] == 600
+    # easy: wanted=6, money=20*10*2=400
+    assert res["rewards"]["reward_money"] == 400
     assert res["rewards"]["reward_influence"] == 12
 
 
@@ -479,6 +479,7 @@ async def test_complete_mission_allocates_resources(db_session):
     await db_session.commit()
     res_after = await user_resource_crud.get_by_user(db_session, user.id)
     assert res_after.money == money_before + complete_res["reward_money"]
+    assert complete_res["wanted_increase"] == 6  # easy difficulty
     assert res_after.influence == influence_before + complete_res["reward_influence"]
     assert res_after.wanted_level == wanted_before + complete_res["wanted_increase"]
 
