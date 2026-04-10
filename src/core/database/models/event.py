@@ -18,10 +18,17 @@ class MissionEvent(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     mission_id: Mapped[int] = mapped_column(ForeignKey("missions.id"))
-    event_type: Mapped[MissionEventType] = mapped_column(PgEnum(MissionEventType), nullable=False)
-    chance: Mapped[int] = mapped_column(default=10, server_default="10")  # базовый шанс события в %
-    description: Mapped[str] = mapped_column(default="", server_default="")  # текст описания события
+    event_type: Mapped[MissionEventType] = mapped_column(
+        PgEnum(MissionEventType), nullable=False
+    )
+    chance: Mapped[int] = mapped_column(
+        default=10, server_default="10"
+    )  # базовый шанс события в %
+    description: Mapped[str] = mapped_column(
+        default="", server_default=""
+    )  # текст описания события
     parameters: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     mission: Mapped["Mission"] = relationship(back_populates="events")
+    choices: Mapped[list["MissionEventChoice"]] = relationship(back_populates="event")

@@ -17,9 +17,19 @@ class CharacterTrait(str, enum.Enum):
 class MissionStatus(str, enum.Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
+    WAITING_EVENT = "waiting_event"  # миссия ждёт выбора игрока по событию
     SUCCESS = "success"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class EventChoiceType(str, enum.Enum):
+    """Типы выбора игрока при событии."""
+
+    PAYOFF = "payoff"  # откупиться деньгами
+    FIGHT = "fight"  # бой (зависит от оружия и силы)
+    TALK = "talk"  # заговорить зубы (зависит от влияния)
+    DO_NOTHING = "do_nothing"  # бездействие (провал/штраф)
 
 
 class MissionEventType(str, enum.Enum):

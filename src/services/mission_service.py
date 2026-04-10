@@ -301,6 +301,12 @@ class MissionService(BaseService):
     # -------------------------
 
     async def complete_mission(self, user_mission_id: int):
+        """Завершить миссию. Если сработало событие (10%) — приостановить и ждать выбора."""
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+
+        from core.database.models import MissionCharacter
+
         user_mission: UserMission = await self.user_mission_crud.get(
             self.session, user_mission_id
         )
@@ -316,12 +322,7 @@ class MissionService(BaseService):
 
         mission: Mission = user_mission.mission
 
-        # персонажи: загружаем привязки и связанные персонажи явным запросом
-        from sqlalchemy import select
-        from sqlalchemy.orm import selectinload
-
-        from core.database.models import MissionCharacter
-
+        # Загружаем персонажей
         mchars = (
             (
                 await self.session.execute(
@@ -335,41 +336,310 @@ class MissionService(BaseService):
         )
         characters = [mc.character for mc in mchars]
 
-        # события
+        # Проверяем случайное событие (10% шанс)
         events = await self.event_crud.list_by_mission(self.session, mission.id)
+        triggered_event = None
 
-        event_results = []
-        success = True
+        for event in events:
+            roll = randint(1, 100)
+            if roll <= event.chance:
+                triggered_event = event
+                break
 
+        if triggered_event:
+            # Событие сработало — создаём запись лога и приостанавливаем миссию
+            return await self._trigger_event(user_mission, triggered_event, characters)
+
+        # Нет событий — завершаем сразу
+        return await self._finalize_mission(
+            user_mission, characters, success=True, event_results=[]
+        )
+
+    # -------------------------
+    # СОБЫТИЯ
+    # -------------------------
+
+    async def _trigger_event(
+        self, user_mission: UserMission, event, characters: List[Character]
+    ):
+        """Создать активное событие и приостановить миссию."""
+        from crud.other_crud import (
+            mission_event_choice_crud,
+            user_mission_event_log_crud,
+        )
+
+        # Получаем варианты выбора для этого события
+        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
+
+        if self.session.in_transaction():
+            user_mission.status = MissionStatus.WAITING_EVENT
+        else:
+            async with self.session.begin():
+                user_mission.status = MissionStatus.WAITING_EVENT
+
+        # Создаём запись лога
+        event_log = await user_mission_event_log_crud.create(
+            self.session,
+            {
+                "user_mission_id": user_mission.id,
+                "resolved": False,
+                "success": None,
+                "result_description": None,
+            },
+            commit=False,
+        )
+        await self.session.flush()
+
+        return {
+            "success": True,
+            "event_triggered": True,
+            "event_log_id": event_log.id,
+            "event_type": event.event_type.value,
+            "event_description": event.description,
+            "choices": [
+                {
+                    "id": c.id,
+                    "choice_type": c.choice_type.value,
+                    "label": c.label,
+                    "description": c.description,
+                    "money_cost": c.money_cost,
+                    "influence_required": c.influence_required,
+                    "power_required": c.power_required,
+                    "success_chance_base": c.success_chance_base,
+                }
+                for c in choices
+            ],
+        }
+
+    async def get_active_event(self, user_mission_id: int, user_id: int):
+        """Получить текущее активное событие миссии."""
+        from crud.other_crud import (
+            mission_event_choice_crud,
+            user_mission_event_log_crud,
+        )
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+
+        from core.database.models import UserMission
+
+        user_mission = (
+            await self.session.execute(
+                select(UserMission)
+                .options(selectinload(UserMission.mission))
+                .where(
+                    UserMission.id == user_mission_id, UserMission.user_id == user_id
+                )
+            )
+        ).scalar_one_or_none()
+
+        if not user_mission:
+            return None
+
+        if user_mission.status != MissionStatus.WAITING_EVENT:
+            return None
+
+        event_log = await user_mission_event_log_crud.get_active(
+            self.session, user_mission_id
+        )
+        if not event_log:
+            return None
+
+        # Определяем тип события из миссии
+        events = await self.event_crud.list_by_mission(
+            self.session, user_mission.mission_id
+        )
+        if not events:
+            return None
+
+        event = events[0]  # берём первое событие
+        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
+
+        return {
+            "event_log_id": event_log.id,
+            "event_type": event.event_type.value,
+            "event_description": event.description,
+            "choices": [
+                {
+                    "id": c.id,
+                    "event_id": c.event_id,
+                    "choice_type": c.choice_type,
+                    "label": c.label,
+                    "description": c.description,
+                    "money_cost": c.money_cost,
+                    "influence_required": c.influence_required,
+                    "power_required": c.power_required,
+                    "success_chance_base": c.success_chance_base,
+                }
+                for c in choices
+            ],
+        }
+
+    async def respond_event(self, user_mission_id: int, user_id: int, choice_type):
+        """Обработать выбор игрока по событию."""
+        from random import randint
+
+        from crud.other_crud import (
+            mission_event_choice_crud,
+            user_mission_event_log_crud,
+        )
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+
+        from core.database.models import MissionCharacter, UserMission
+
+        user_mission = (
+            await self.session.execute(
+                select(UserMission)
+                .options(selectinload(UserMission.mission))
+                .where(
+                    UserMission.id == user_mission_id, UserMission.user_id == user_id
+                )
+            )
+        ).scalar_one_or_none()
+
+        if not user_mission:
+            return {"success": False, "message": "Миссия не найдена"}
+
+        if user_mission.status != MissionStatus.WAITING_EVENT:
+            return {"success": False, "message": "Нет активного события"}
+
+        event_log = await user_mission_event_log_crud.get_active(
+            self.session, user_mission_id
+        )
+        if not event_log:
+            return {"success": False, "message": "Нет активного события"}
+
+        # Загружаем персонажей
+        mchars = (
+            (
+                await self.session.execute(
+                    select(MissionCharacter)
+                    .options(selectinload(MissionCharacter.character))
+                    .where(MissionCharacter.user_mission_id == user_mission_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        characters = [mc.character for mc in mchars]
+
+        # Находим событие и выбор
+        mission = user_mission.mission
+        events = await self.event_crud.list_by_mission(self.session, mission.id)
+        if not events:
+            return {"success": False, "message": "Событие не найдено"}
+
+        event = events[0]
+        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
+        choice = next((c for c in choices if c.choice_type == choice_type), None)
+
+        if not choice:
+            return {"success": False, "message": "Неверный тип выбора"}
+
+        # Рассчитываем исход
+        success, description = await self._resolve_choice(
+            choice, user_mission, characters
+        )
+
+        # Обновляем лог
+        if self.session.in_transaction():
+            event_log.chosen_type = choice_type
+            event_log.resolved = True
+            event_log.success = success
+            event_log.result_description = description
+        else:
+            async with self.session.begin():
+                event_log.chosen_type = choice_type
+                event_log.resolved = True
+                event_log.success = success
+                event_log.result_description = description
+
+        # Завершаем миссию
+        event_results = [f"{event.description} → {description}"]
+        return await self._finalize_mission(
+            user_mission, characters, success=success, event_results=event_results
+        )
+
+    async def _resolve_choice(
+        self, choice, user_mission: UserMission, characters: List[Character]
+    ):
+        """Рассчитать результат выбора игрока. Возвращает (success, description)."""
+        from crud.other_crud import user_resource_crud
+
+        resources = await user_resource_crud.get_by_user(
+            self.session, user_mission.user_id
+        )
+
+        if choice.choice_type.value == "do_nothing":
+            # Бездействие → провал
+            if user_mission.mission_id:  # any mission
+                # Для random_luck — это просто принятие удачи
+                return True, "Удача принята"
+            return False, "Бездействие. Миссия провалена."
+
+        if choice.choice_type.value == "payoff":
+            # Откуп — проверяем деньги
+            if resources and resources.money >= choice.money_cost:
+                resources.money -= choice.money_cost
+                return True, f"Откупился. -{choice.money_cost} монет"
+            return False, "Недостаточно денег для откупа."
+
+        if choice.choice_type.value == "talk":
+            # Заговорить зубы — зависит от влияния
+            if resources and resources.influence >= choice.influence_required:
+                chance = (
+                    choice.success_chance_base
+                    + (resources.influence - choice.influence_required) * 2
+                )
+                if randint(1, 100) <= chance:
+                    return True, "Удалось заговорить зубы!"
+                return False, "Не удалось заговорить зубы."
+            return False, "Недостаточно влияния."
+
+        if choice.choice_type.value == "fight":
+            # Бой — зависит от оружия и силы
+            from core.database.models import Weapon
+            from sqlalchemy import select
+
+            total_power = sum(c.power for c in characters)
+            weapon_count = 0
+            for c in characters:
+                weapons = (
+                    (
+                        await self.session.execute(
+                            select(Weapon).where(Weapon.owner_id == c.id)
+                        )
+                    )
+                    .scalars()
+                    .all()
+                )
+                weapon_count += len(weapons)
+                total_power += sum(w.bonus_power for w in weapons)
+
+            if weapon_count < 1:
+                return False, "Нет оружия для боя!"
+
+            chance = (
+                choice.success_chance_base + (total_power - choice.power_required) * 2
+            )
+            if randint(1, 100) <= chance:
+                return True, "Отбили атаку!"
+            return False, "Не удалось отбить атаку."
+
+        return False, "Неизвестный тип выбора."
+
+    async def _finalize_mission(
+        self,
+        user_mission: UserMission,
+        characters: List[Character],
+        success: bool,
+        event_results: list,
+    ):
+        """Завершить миссию: освободить персонажей, начислить награды."""
         reward_money = user_mission.reward_money or 0
         reward_influence = user_mission.reward_influence or 0
         wanted_increase = user_mission.wanted_increase or 1
 
-        for event in events:
-            roll = randint(1, 100)
-
-            if roll > event.chance:
-                continue
-
-            if event.event_type == MissionEventType.POLICE_RAID:
-                money_lost = min(roll * 10, reward_money)
-                reward_money -= money_lost
-                event_results.append(
-                    f"{event.description} | Потеря денег: {money_lost}"
-                )
-
-            elif event.event_type == MissionEventType.COMPETITOR_ATTACK:
-                reward_influence = max(0, reward_influence - 10)
-                event_results.append(f"{event.description} | Потеря влияния")
-
-            elif event.event_type == MissionEventType.RANDOM_LUCK:
-                if randint(1, 100) > 20:
-                    success = False
-                    event_results.append(f"{event.description} | Провал")
-                else:
-                    event_results.append(f"{event.description} | Повезло")
-
-        # Начисляем награды и обновляем статус в транзакции
         if self.session.in_transaction():
             for c in characters:
                 c.is_busy = False
@@ -385,7 +655,6 @@ class MissionService(BaseService):
                 "wanted_increase": wanted_increase,
             }
 
-            # Начисляем ресурсы пользователю
             if success:
                 resources = await user_resource_crud.get_by_user(
                     self.session, user_mission.user_id
@@ -400,7 +669,7 @@ class MissionService(BaseService):
                         {
                             "user_id": user_mission.user_id,
                             "money": reward_money if reward_money else 0,
-                            "influence": (reward_influence if reward_influence else 0),
+                            "influence": reward_influence if reward_influence else 0,
                             "wanted_level": wanted_increase,
                         },
                         commit=False,
@@ -421,9 +690,7 @@ class MissionService(BaseService):
                     "wanted_increase": wanted_increase,
                 }
 
-                # Начисляем ресурсы пользователю
                 if success:
-
                     resources = await user_resource_crud.get_by_user(
                         self.session, user_mission.user_id
                     )

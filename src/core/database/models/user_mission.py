@@ -57,3 +57,6 @@ class UserMission(Base):
     characters: Mapped[list["MissionCharacter"]] = relationship(
         back_populates="user_mission"
     )
+    event_logs: Mapped[list["UserMissionEventLog"]] = relationship(
+        back_populates="user_mission"
+    )
