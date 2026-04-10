@@ -200,6 +200,16 @@ class MissionService(BaseService):
         mission_id: int,
         characters: List[Character],
     ):
+        # Проверка уровня розыска — при wanted > 80 миссии заблокированы
+        from crud.other_crud import user_resource_crud
+
+        resources = await user_resource_crud.get_by_user(self.session, user_id)
+        if resources and resources.wanted_level > 80:
+            return {
+                "success": False,
+                "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения.",
+            }
+
         mission = await self.get(mission_id)
         if not mission:
             return {"success": False, "message": "Миссия не найдена"}
@@ -225,7 +235,8 @@ class MissionService(BaseService):
                     "mission_id": mission_id,
                     "status": MissionStatus.IN_PROGRESS,
                     "started_at": datetime.now(timezone.utc),
-                    "ends_at": datetime.now(timezone.utc) + timedelta(seconds=mission.duration),
+                    "ends_at": datetime.now(timezone.utc)
+                    + timedelta(seconds=mission.duration),
                     "success_chance": 100,
                     # Сохраняем рассчитанные награды
                     "reward_money": rewards["reward_money"],

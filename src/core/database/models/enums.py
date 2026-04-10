@@ -5,6 +5,7 @@ class CharacterRole(str, enum.Enum):
     THUG = "thug"
     HACKER = "hacker"
     NEGOTIATOR = "negotiator"
+    CAPO = "capo"  # универсальный боец, стартовый персонаж
 
 
 class CharacterTrait(str, enum.Enum):
