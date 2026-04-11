@@ -264,7 +264,9 @@ async def test_mission_requires_weapon(db_session):
     svc = MissionService(db_session)
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is False
-    assert "оружия" in res["message"].lower() or "weapon" in res["message"].lower()
+    assert (
+        "оружия" in res["message"].lower() or "weapon" in res["message"].lower()
+    )
 
 
 @pytest.mark.asyncio
@@ -358,7 +360,10 @@ async def test_mission_requires_tool(db_session):
     svc = MissionService(db_session)
     res = await svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is False
-    assert "инструмент" in res["message"].lower() or "tool" in res["message"].lower()
+    assert (
+        "инструмент" in res["message"].lower()
+        or "tool" in res["message"].lower()
+    )
 
 
 @pytest.mark.asyncio
@@ -479,8 +484,14 @@ async def test_complete_mission_allocates_resources(db_session):
     res_after = await user_resource_crud.get_by_user(db_session, user.id)
     assert res_after.money == money_before + complete_res["reward_money"]
     assert complete_res["wanted_increase"] == 6  # easy difficulty
-    assert res_after.influence == influence_before + complete_res["reward_influence"]
-    assert res_after.wanted_level == wanted_before + complete_res["wanted_increase"]
+    assert (
+        res_after.influence
+        == influence_before + complete_res["reward_influence"]
+    )
+    assert (
+        res_after.wanted_level
+        == wanted_before + complete_res["wanted_increase"]
+    )
 
 
 @pytest.mark.asyncio
@@ -612,7 +623,9 @@ async def test_mission_too_many_characters(db_session):
     svc = MissionService(db_session)
     res = await svc.start_mission(user.id, mission.id, [c1, c2])
     assert res["success"] is False
-    assert "много" in res["message"].lower() or "slots" in res["message"].lower()
+    assert (
+        "много" in res["message"].lower() or "slots" in res["message"].lower()
+    )
 
 
 @pytest.mark.asyncio

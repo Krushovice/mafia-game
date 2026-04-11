@@ -59,7 +59,9 @@ class InfluenceDecayService:
         actual_decay = old_influence - resources.influence
 
         needs_return_mission = actual_decay >= 4
-        hours_away = (datetime.utcnow() - user.created_at).total_seconds() / 3600
+        hours_away = (
+            datetime.utcnow() - user.created_at
+        ).total_seconds() / 3600
         if hours_away >= self.RETURN_MISSION_HOURS:
             needs_return_mission = True
 
@@ -129,7 +131,9 @@ class InfluenceDecayService:
         self, user_mission_id: int, user_id: int, success: bool
     ) -> dict:
         """Завершить возвратную миссию с наградой/штрафом."""
-        user_mission = await user_mission_crud.get(self.session, user_mission_id)
+        user_mission = await user_mission_crud.get(
+            self.session, user_mission_id
+        )
         if not user_mission:
             return {"success": False, "message": "Миссия не найдена"}
 
@@ -142,7 +146,9 @@ class InfluenceDecayService:
             user_mission.status = MissionStatus.COMPLETED
             user_mission.result = {"success": True, "type": "return"}
 
-            resources = await user_resource_crud.get_by_user(self.session, user_id)
+            resources = await user_resource_crud.get_by_user(
+                self.session, user_id
+            )
             if resources:
                 resources.money += 50 if is_newbie else 100
                 resources.influence += 3
@@ -150,7 +156,9 @@ class InfluenceDecayService:
             user_mission.status = MissionStatus.FAILED
             user_mission.result = {"success": False, "type": "return"}
 
-            resources = await user_resource_crud.get_by_user(self.session, user_id)
+            resources = await user_resource_crud.get_by_user(
+                self.session, user_id
+            )
             if resources:
                 resources.influence = max(
                     0, resources.influence - (5 if is_newbie else 7)
@@ -158,8 +166,10 @@ class InfluenceDecayService:
 
         return {
             "success": success,
-            "influence_change": 3 if success else -(5 if is_newbie else 7),
-            "money_change": 50 if (success and is_newbie) else 100 if success else 0,
+            "influence_change": (3 if success else -(5 if is_newbie else 7)),
+            "money_change": (
+                50 if (success and is_newbie) else 100 if success else 0
+            ),
         }
 
     async def _check_newbie(self, user_id: int) -> bool:

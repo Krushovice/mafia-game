@@ -1,6 +1,11 @@
 import pytest
 
-from crud.other_crud import character_crud, mission_crud, tool_crud, weapon_crud
+from crud.other_crud import (
+    character_crud,
+    mission_crud,
+    tool_crud,
+    weapon_crud,
+)
 
 
 @pytest.mark.asyncio
@@ -25,10 +30,12 @@ async def test_create_and_list_weapons_tools(db_session):
     )
 
     w1 = await weapon_crud.create(
-        db_session, {"name": "Knife", "bonus_power": 3, "owner_id": char.id}
+        db_session,
+        {"name": "Knife", "bonus_power": 3, "owner_id": char.id},
     )
     w2 = await weapon_crud.create(
-        db_session, {"name": "Pistol", "bonus_power": 5, "owner_id": char.id}
+        db_session,
+        {"name": "Pistol", "bonus_power": 5, "owner_id": char.id},
     )
 
     ws = await weapon_crud.list_by_owner(db_session, char.id)
@@ -88,7 +95,10 @@ async def test_mission_and_character_list_helpers(db_session):
     )
     # attach equipment
     await weapon_crud.create(
-        db_session, {"name": "Fist", "bonus_power": 1, "owner_id": ch.id}
+        db_session,
+        {"name": "Fist", "bonus_power": 1, "owner_id": ch.id},
     )
-    chars = await character_crud.list_by_user_with_equipment(db_session, user.id)
+    chars = await character_crud.list_by_user_with_equipment(
+        db_session, user.id
+    )
     assert any(c.id == ch.id for c in chars)

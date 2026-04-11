@@ -45,7 +45,9 @@ class DataBaseHelper:
             scopefunc=current_task,
         )
 
-    async def session_dependency(self) -> AsyncGenerator[AsyncSession, None]:
+    async def session_dependency(
+        self,
+    ) -> AsyncGenerator[AsyncSession, None]:
         """
         FastAPI dependency.
         """

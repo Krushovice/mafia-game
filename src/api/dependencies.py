@@ -18,10 +18,13 @@ async def get_current_user(
     # Note: callers should pass `db` via `Depends(get_db)` when using this dependency.
     if db is None:
         raise HTTPException(
-            status_code=500, detail="Database session not provided to auth dependency"
+            status_code=500,
+            detail="Database session not provided to auth dependency",
         )
     if telegram_id is None:
-        raise HTTPException(status_code=401, detail="X-Telegram-Id header required")
+        raise HTTPException(
+            status_code=401, detail="X-Telegram-Id header required"
+        )
     svc = UserService(db)
     user = await svc.get_or_create_by_telegram(telegram_id, username)
     return user
@@ -37,12 +40,14 @@ async def get_current_user_tma(
     """
     if db is None:
         raise HTTPException(
-            status_code=500, detail="Database session not provided to auth dependency"
+            status_code=500,
+            detail="Database session not provided to auth dependency",
         )
 
     if not settings.tma or not settings.tma.bot_token:
         raise HTTPException(
-            status_code=500, detail="TMA not configured (missing tma.bot_token)"
+            status_code=500,
+            detail="TMA not configured (missing tma.bot_token)",
         )
 
     user_data = validate_init_data(init_data, settings.tma.bot_token)
@@ -55,7 +60,9 @@ async def get_current_user_tma(
         raise HTTPException(status_code=401, detail="No user id in initData")
 
     svc = UserService(db)
-    user = await svc.get_or_create_by_telegram(telegram_id, username or first_name)
+    user = await svc.get_or_create_by_telegram(
+        telegram_id, username or first_name
+    )
     return user
 
 

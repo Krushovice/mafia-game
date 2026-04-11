@@ -2,7 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from crud.other_crud import character_crud, mission_crud, user_mission_crud
+from crud.other_crud import (
+    character_crud,
+    mission_crud,
+    user_mission_crud,
+)
 from services.mission_service import MissionService
 from services.user_service import UserService
 

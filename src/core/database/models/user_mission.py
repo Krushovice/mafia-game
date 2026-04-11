@@ -1,7 +1,16 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, DateTime, Enum, ForeignKey, Index, Integer, func, text
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    func,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -53,7 +62,9 @@ class UserMission(Base):
         DateTime, default=datetime.now, server_default=func.now()
     )
 
-    __table_args__ = (Index("ix_user_missions_ends_at_status", "ends_at", "status"),)
+    __table_args__ = (
+        Index("ix_user_missions_ends_at_status", "ends_at", "status"),
+    )
 
     user: Mapped["User"] = relationship(back_populates="missions")
     mission: Mapped["Mission"] = relationship(back_populates="user_missions")

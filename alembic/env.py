@@ -23,6 +23,7 @@ target_metadata = Base.metadata
 # Функции миграции
 # ----------------------------------------------------------
 
+
 def do_run_migrations(connection):
     """Sync runner, вызывается внутри run_sync."""
     context.configure(connection=connection, target_metadata=target_metadata)

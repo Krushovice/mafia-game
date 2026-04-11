@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 
-from core.database.models.enums import MissionDifficulty, MissionStatType
+from core.database.models.enums import (
+    MissionDifficulty,
+    MissionStatType,
+)
 
 
 class MissionEventRead(BaseModel):

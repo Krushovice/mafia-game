@@ -45,7 +45,11 @@ class CRUDBase(Generic[ModelType]):
         return result.scalars().all()
 
     async def update(
-        self, session: AsyncSession, obj_id: int, obj_in: dict, commit: bool = True
+        self,
+        session: AsyncSession,
+        obj_id: int,
+        obj_in: dict,
+        commit: bool = True,
     ) -> ModelType | None:
         obj = await self.get(session, obj_id)
         if not obj:

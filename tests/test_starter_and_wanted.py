@@ -35,7 +35,9 @@ async def test_get_or_create_gives_starter_character(db_session):
     svc = UserService(db_session)
     user = await svc.get_or_create_by_telegram(8002, "starter_char_tester")
 
-    chars = await character_crud.list_by_user_with_equipment(db_session, user.id)
+    chars = await character_crud.list_by_user_with_equipment(
+        db_session, user.id
+    )
     assert len(chars) == 1
 
     capo = chars[0]
@@ -60,7 +62,9 @@ async def test_existing_user_doesnt_get_double_starter(db_session):
     assert user1.id == user2.id
 
     # Check no duplicate characters
-    chars = await character_crud.list_by_user_with_equipment(db_session, user1.id)
+    chars = await character_crud.list_by_user_with_equipment(
+        db_session, user1.id
+    )
     assert len(chars) == 1
 
     resources = await user_resource_crud.get_by_user(db_session, user1.id)
@@ -115,7 +119,10 @@ async def test_mission_blocked_when_wanted_above_80(db_session):
     mission_svc = MissionService(db_session)
     res = await mission_svc.start_mission(user.id, mission.id, [char])
     assert res["success"] is False
-    assert "розыска" in res["message"].lower() or "розыск" in res["message"].lower()
+    assert (
+        "розыска" in res["message"].lower()
+        or "розыск" in res["message"].lower()
+    )
 
 
 @pytest.mark.asyncio

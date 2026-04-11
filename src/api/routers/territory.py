@@ -30,7 +30,9 @@ async def get_passive_income(
     """Текущий пассивный доход от территорий."""
     from crud.other_crud import user_territory_crud
 
-    return await user_territory_crud.get_total_passive_income(session, current_user.id)
+    return await user_territory_crud.get_total_passive_income(
+        session, current_user.id
+    )
 
 
 @router.post("/{territory_id}/capture")
@@ -42,7 +44,9 @@ async def start_capture(
 ):
     """Начать миссию захвата территории."""
     svc = TerritoryService(session)
-    result = await svc.start_capture(current_user.id, territory_id, character_ids)
+    result = await svc.start_capture(
+        current_user.id, territory_id, character_ids
+    )
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("message"))
     return result
@@ -64,7 +68,9 @@ async def get_return_mission(
     is_newbie = svc.is_newbie(user)
     mission = await svc.get_or_create_return_mission(current_user.id, is_newbie)
     if not mission:
-        raise HTTPException(status_code=404, detail="No return mission available")
+        raise HTTPException(
+            status_code=404, detail="No return mission available"
+        )
     return mission
 
 
@@ -77,7 +83,9 @@ async def complete_return_mission(
 ):
     """Завершить возвратную миссию."""
     svc = InfluenceDecayService(session)
-    result = await svc.complete_return_mission(mission_id, current_user.id, success)
+    result = await svc.complete_return_mission(
+        mission_id, current_user.id, success
+    )
     if not result.get("success") and "message" in result:
         raise HTTPException(status_code=400, detail=result.get("message"))
     return result

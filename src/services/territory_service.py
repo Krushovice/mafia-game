@@ -22,18 +22,24 @@ class TerritoryService(BaseService):
         self.user_territory_crud = user_territory_crud
         self.user_resource_crud = user_resource_crud
 
-    async def list_for_user(self, user_id: int, user_influence: int) -> list[dict]:
+    async def list_for_user(
+        self, user_id: int, user_influence: int
+    ) -> list[dict]:
         """Список территорий со статусом для пользователя."""
         all_territories = await territory_crud.list_ordered(self.session)
         captured_ids = {
             ut.territory_id
-            for ut in await self.user_territory_crud.list_by_user(self.session, user_id)
+            for ut in await self.user_territory_crud.list_by_user(
+                self.session, user_id
+            )
         }
 
         result = []
         for t in all_territories:
             is_captured = t.id in captured_ids
-            can_attempt = user_influence >= t.influence_required and not is_captured
+            can_attempt = (
+                user_influence >= t.influence_required and not is_captured
+            )
             result.append(
                 {
                     "id": t.id,
@@ -60,10 +66,15 @@ class TerritoryService(BaseService):
         """Начать миссию захвата территории."""
         territory = await territory_crud.get(self.session, territory_id)
         if not territory:
-            return {"success": False, "message": "Территория не найдена"}
+            return {
+                "success": False,
+                "message": "Территория не найдена",
+            }
 
         # Проверка влияния
-        resources = await self.user_resource_crud.get_by_user(self.session, user_id)
+        resources = await self.user_resource_crud.get_by_user(
+            self.session, user_id
+        )
         if not resources or resources.influence < territory.influence_required:
             return {
                 "success": False,
@@ -74,20 +85,32 @@ class TerritoryService(BaseService):
         if await self.user_territory_crud.is_captured(
             self.session, user_id, territory_id
         ):
-            return {"success": False, "message": "Территория уже захвачена"}
+            return {
+                "success": False,
+                "message": "Территория уже захвачена",
+            }
 
         # Проверка персонажей
         characters = []
         for cid in character_ids:
             c = await character_crud.get(self.session, cid)
             if not c:
-                return {"success": False, "message": f"Персонаж {cid} не найден"}
+                return {
+                    "success": False,
+                    "message": f"Персонаж {cid} не найден",
+                }
             if c.is_busy:
-                return {"success": False, "message": f"Персонаж {c.name} занят"}
+                return {
+                    "success": False,
+                    "message": f"Персонаж {c.name} занят",
+                }
             characters.append(c)
 
         if len(characters) != 3:
-            return {"success": False, "message": "Для захвата нужно ровно 3 персонажа"}
+            return {
+                "success": False,
+                "message": "Для захвата нужно ровно 3 персонажа",
+            }
 
         # Проверка статов
         total_power = sum(c.power for c in characters)
@@ -139,7 +162,11 @@ class TerritoryService(BaseService):
 
             for idx, c in enumerate(characters):
                 await mission_character_crud.create_link(
-                    self.session, user_mission.id, c.id, idx, commit=False
+                    self.session,
+                    user_mission.id,
+                    c.id,
+                    idx,
+                    commit=False,
                 )
         else:
             async with self.session.begin():
@@ -153,7 +180,8 @@ class TerritoryService(BaseService):
                         "mission_id": None,
                         "status": MissionStatus.IN_PROGRESS,
                         "started_at": datetime.utcnow(),
-                        "ends_at": datetime.utcnow() + timedelta(seconds=duration),
+                        "ends_at": datetime.utcnow()
+                        + timedelta(seconds=duration),
                         "success_chance": 100,
                         "reward_money": territory.reward_money,
                         "reward_influence": territory.reward_influence,
@@ -167,7 +195,11 @@ class TerritoryService(BaseService):
 
                 for idx, c in enumerate(characters):
                     await mission_character_crud.create_link(
-                        self.session, user_mission.id, c.id, idx, commit=False
+                        self.session,
+                        user_mission.id,
+                        c.id,
+                        idx,
+                        commit=False,
                     )
 
         return {
@@ -178,7 +210,9 @@ class TerritoryService(BaseService):
             "ends_at": user_mission.ends_at,
         }
 
-    async def on_capture_complete(self, user_id: int, territory_id: int) -> bool:
+    async def on_capture_complete(
+        self, user_id: int, territory_id: int
+    ) -> bool:
         """Привязать территорию к пользователю после успешного захвата."""
         # Проверка — может уже захвачена (двойной вызов)
         if await self.user_territory_crud.is_captured(
@@ -201,7 +235,9 @@ class TerritoryService(BaseService):
         if income["money"] == 0 and income["influence"] == 0:
             return income
 
-        resources = await self.user_resource_crud.get_by_user(self.session, user_id)
+        resources = await self.user_resource_crud.get_by_user(
+            self.session, user_id
+        )
         if resources:
             resources.money += income["money"]
             resources.influence += income["influence"]

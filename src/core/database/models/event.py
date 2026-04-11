@@ -31,4 +31,6 @@ class MissionEvent(Base):
     order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     mission: Mapped["Mission"] = relationship(back_populates="events")
-    choices: Mapped[list["MissionEventChoice"]] = relationship(back_populates="event")
+    choices: Mapped[list["MissionEventChoice"]] = relationship(
+        back_populates="event"
+    )

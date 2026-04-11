@@ -44,7 +44,9 @@ def validate_init_data(init_data: str, bot_token: str) -> dict:
         )
 
     # Build data_check_string: sorted key=value pairs joined by \n, excluding "hash"
-    data_check_arr = sorted([(k, v[0]) for k, v in parsed.items() if k != "hash"])
+    data_check_arr = sorted(
+        [(k, v[0]) for k, v in parsed.items() if k != "hash"]
+    )
     data_check_string = "\n".join(f"{k}={v}" for k, v in data_check_arr)
 
     # HMAC-SHA256: secret_key = SHA256(bot_token)

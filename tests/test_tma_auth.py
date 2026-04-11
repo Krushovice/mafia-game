@@ -35,7 +35,11 @@ class TestValidateInitData:
 
     def test_valid_init_data(self):
         """Valid initData should return user data."""
-        user_data = {"id": 12345, "first_name": "Test", "username": "testuser"}
+        user_data = {
+            "id": 12345,
+            "first_name": "Test",
+            "username": "testuser",
+        }
         init_data = _make_init_data(user_data, self.BOT_TOKEN)
 
         result = validate_init_data(init_data, self.BOT_TOKEN)
@@ -56,7 +60,10 @@ class TestValidateInitData:
         from fastapi import HTTPException
 
         user_data = {"id": 12345, "first_name": "Test"}
-        data = {"user": json.dumps(user_data), "auth_date": str(int(time.time()))}
+        data = {
+            "user": json.dumps(user_data),
+            "auth_date": str(int(time.time())),
+        }
 
         with pytest.raises(HTTPException) as exc:
             validate_init_data(urlencode(data), self.BOT_TOKEN)
@@ -99,10 +106,14 @@ class TestValidateInitData:
 
         # We need a valid hash for this test, but the JSON is invalid
         # The hash won't match anyway, but let's test the flow
-        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
+        data_check_string = "\n".join(
+            f"{k}={v}" for k, v in sorted(data.items())
+        )
         secret_key = hashlib.sha256(self.BOT_TOKEN.encode("utf-8")).digest()
         hash_val = hmac.new(
-            secret_key, data_check_string.encode("utf-8"), hashlib.sha256
+            secret_key,
+            data_check_string.encode("utf-8"),
+            hashlib.sha256,
         ).hexdigest()
         data["hash"] = hash_val
 

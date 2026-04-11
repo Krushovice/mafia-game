@@ -29,11 +29,15 @@ class Mission(Base):
     )  # в секундах
 
     # Награды рассчитываются автоматически от главного стата, но можно переопределить
-    reward_money: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    reward_money: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
     reward_influence: Mapped[int] = mapped_column(
         Integer, default=0, server_default="0"
     )
-    wanted_increase: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    wanted_increase: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
 
     difficulty: Mapped["MissionDifficulty"] = mapped_column(
         Enum(
@@ -60,7 +64,9 @@ class Mission(Base):
 
     slots: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
 
-    power_required: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    power_required: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
     intellect_required: Mapped[int] = mapped_column(
         Integer, default=0, server_default="0"
     )
@@ -86,5 +92,9 @@ class Mission(Base):
     )
 
     # Связи
-    user_missions: Mapped[list["UserMission"]] = relationship(back_populates="mission")
-    events: Mapped[list["MissionEvent"]] = relationship(back_populates="mission")
+    user_missions: Mapped[list["UserMission"]] = relationship(
+        back_populates="mission"
+    )
+    events: Mapped[list["MissionEvent"]] = relationship(
+        back_populates="mission"
+    )

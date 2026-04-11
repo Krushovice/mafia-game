@@ -3,15 +3,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user, get_db
 from crud.other_crud import mission_event_crud
-from schemas.mission_event_schemas import MissionEventCreate, MissionEventRead
+from schemas.mission_event_schemas import (
+    MissionEventCreate,
+    MissionEventRead,
+)
 from schemas.mission_schemas import MissionCreate, MissionRead
-from schemas.user_mission_schemas import UserMissionRead, UserMissionStart
+from schemas.user_mission_schemas import (
+    UserMissionRead,
+    UserMissionStart,
+)
 from services.mission_service import MissionService
 
 router = APIRouter(prefix="/missions", tags=["Missions"])
 
 
-@router.post("/", response_model=MissionRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=MissionRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_mission(
     data: MissionCreate,
     session: AsyncSession = Depends(get_db),
@@ -34,7 +44,11 @@ async def get_mission(
     return mission
 
 
-@router.post("/{mission_id}/events", response_model=MissionEventRead, status_code=201)
+@router.post(
+    "/{mission_id}/events",
+    response_model=MissionEventRead,
+    status_code=201,
+)
 async def create_event(
     mission_id: int,
     data: MissionEventCreate,
@@ -71,7 +85,9 @@ async def start_mission(
     for cid in body.character_ids:
         c = await character_crud.get(session, cid)
         if not c:
-            raise HTTPException(status_code=404, detail=f"Character {cid} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Character {cid} not found"
+            )
         chars.append(c)
 
     res = await svc.start_mission(current_user.id, mission_id, chars)

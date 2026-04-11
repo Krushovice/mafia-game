@@ -3,7 +3,11 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.models.enums import CharacterRole, CharacterTrait
-from crud.other_crud import character_crud, user_crud, user_resource_crud
+from crud.other_crud import (
+    character_crud,
+    user_crud,
+    user_resource_crud,
+)
 
 from .base_service import BaseService
 
@@ -51,14 +55,18 @@ class UserService(BaseService):
         if not res:
             if self.session.in_transaction():
                 res = await self.user_resource_crud.create(
-                    self.session, {"user_id": user_id, **defaults}, commit=False
+                    self.session,
+                    {"user_id": user_id, **defaults},
+                    commit=False,
                 )
                 await self.session.flush()
                 return res
             else:
                 async with self.session.begin():
                     res = await self.user_resource_crud.create(
-                        self.session, {"user_id": user_id, **defaults}, commit=False
+                        self.session,
+                        {"user_id": user_id, **defaults},
+                        commit=False,
                     )
                     await self.session.flush()
                     return res

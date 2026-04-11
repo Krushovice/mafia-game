@@ -10,7 +10,9 @@ router = APIRouter(prefix="/equipment", tags=["Equipment"])
 
 
 @router.post(
-    "/weapons/", response_model=WeaponRead, status_code=status.HTTP_201_CREATED
+    "/weapons/",
+    response_model=WeaponRead,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_weapon(
     data: WeaponCreate,
@@ -41,7 +43,11 @@ async def delete_weapon(
     return {"success": True}
 
 
-@router.post("/tools/", response_model=ToolRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/tools/",
+    response_model=ToolRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_tool(
     data: ToolCreate,
     session: AsyncSession = Depends(get_db),

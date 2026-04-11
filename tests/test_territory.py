@@ -133,13 +133,17 @@ async def test_start_capture_requires_3_characters(db_session):
     territories = await territory_crud.list_ordered(db_session)
     territory_svc = TerritoryService(db_session)
 
-    res = await territory_svc.start_capture(user.id, territories[0].id, [c1.id, c2.id])
+    res = await territory_svc.start_capture(
+        user.id, territories[0].id, [c1.id, c2.id]
+    )
     assert res["success"] is False
     assert "влияния" in res["message"].lower() or "3" in res["message"]
 
 
 @pytest.mark.asyncio
-async def test_start_capture_fails_without_enough_influence(db_session):
+async def test_start_capture_fails_without_enough_influence(
+    db_session,
+):
     """Can't start capture without enough influence."""
     svc = UserService(db_session)
     user = await svc.get_or_create_by_telegram(9011, "low_influence_capture")
@@ -234,7 +238,9 @@ async def test_passive_income_calculation(db_session):
     )
     await db_session.commit()
 
-    income = await user_territory_crud.get_total_passive_income(db_session, user.id)
+    income = await user_territory_crud.get_total_passive_income(
+        db_session, user.id
+    )
     assert income["money"] == 50
     assert income["influence"] == 1
 

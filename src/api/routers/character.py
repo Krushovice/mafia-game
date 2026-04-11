@@ -8,7 +8,11 @@ from services.character_service import CharacterService
 router = APIRouter(prefix="/characters", tags=["Characters"])
 
 
-@router.post("/", response_model=CharacterRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=CharacterRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_character(
     data: CharacterCreate,
     session: AsyncSession = Depends(get_db),
@@ -61,5 +65,7 @@ async def list_characters(
     # list current user's characters with equipment
     from crud.other_crud import character_crud
 
-    chars = await character_crud.list_by_user_with_equipment(session, current_user.id)
+    chars = await character_crud.list_by_user_with_equipment(
+        session, current_user.id
+    )
     return chars

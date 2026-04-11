@@ -20,20 +20,31 @@ class MissionEventChoice(Base):
     __tablename__ = "mission_event_choices"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id: Mapped[int] = mapped_column(ForeignKey("mission_events.id"), index=True)
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("mission_events.id"), index=True
+    )
     choice_type: Mapped[EventChoiceType] = mapped_column(
-        PgEnum(EventChoiceType, native_enum=False, length=32), nullable=False
+        PgEnum(EventChoiceType, native_enum=False, length=32),
+        nullable=False,
     )
 
-    label: Mapped[str] = mapped_column(String(64), default="", server_default="")
-    description: Mapped[str] = mapped_column(Text, default="", server_default="")
+    label: Mapped[str] = mapped_column(
+        String(64), default="", server_default=""
+    )
+    description: Mapped[str] = mapped_column(
+        Text, default="", server_default=""
+    )
 
     # Параметры для расчёта успеха
-    money_cost: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    money_cost: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
     influence_required: Mapped[int] = mapped_column(
         Integer, default=0, server_default="0"
     )
-    power_required: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    power_required: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
 
     # Базовый шанс успеха выбора (0-100)
     success_chance_base: Mapped[int] = mapped_column(

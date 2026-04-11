@@ -69,7 +69,8 @@ class MissionService(BaseService):
 
         return {
             "power": character.power + sum(w.bonus_power for w in weapons),
-            "intellect": character.intellect + sum(t.bonus_intellect for t in tools),
+            "intellect": character.intellect
+            + sum(t.bonus_intellect for t in tools),
             "agility": character.agility + sum(t.bonus_agility for t in tools),
             "weapons_count": len(weapons),
             "tools_count": len(tools),
@@ -115,10 +116,14 @@ class MissionService(BaseService):
             MissionStatType.STEALTH: total_agility,
             MissionStatType.DIPLOMACY: total_intellect,
         }
-        main_stat_value = main_stat_map.get(mission.mission_stat_type, total_power)
+        main_stat_value = main_stat_map.get(
+            mission.mission_stat_type, total_power
+        )
 
         reward_money = int(
-            main_stat_value * self.REWARD_MONEY_PER_STAT * mission.reward_multiplier
+            main_stat_value
+            * self.REWARD_MONEY_PER_STAT
+            * mission.reward_multiplier
         )
         reward_influence = max(
             1,
@@ -128,7 +133,9 @@ class MissionService(BaseService):
                 * mission.reward_multiplier
             ),
         )
-        wanted_increase = self.WANTED_BY_DIFFICULTY.get(mission.difficulty.value, 6)
+        wanted_increase = self.WANTED_BY_DIFFICULTY.get(
+            mission.difficulty.value, 6
+        )
 
         return {
             "reward_money": reward_money,
@@ -170,7 +177,10 @@ class MissionService(BaseService):
             total_tools += stats["tools_count"]
 
         if total_power < mission.power_required:
-            return False, f"Недостаточно силы ({total_power}/{mission.power_required})"
+            return (
+                False,
+                f"Недостаточно силы ({total_power}/{mission.power_required})",
+            )
         if total_intellect < mission.intellect_required:
             return (
                 False,
@@ -258,7 +268,11 @@ class MissionService(BaseService):
             # Связываем персонажей с миссией
             for idx, c in enumerate(characters):
                 await self.mission_character_crud.create_link(
-                    self.session, user_mission.id, c.id, idx, commit=False
+                    self.session,
+                    user_mission.id,
+                    c.id,
+                    idx,
+                    commit=False,
                 )
         else:
             async with self.session.begin():
@@ -291,7 +305,11 @@ class MissionService(BaseService):
                 # Связываем персонажей с миссией
                 for idx, c in enumerate(characters):
                     await self.mission_character_crud.create_link(
-                        self.session, user_mission.id, c.id, idx, commit=False
+                        self.session,
+                        user_mission.id,
+                        c.id,
+                        idx,
+                        commit=False,
                     )
 
         return {
@@ -321,10 +339,16 @@ class MissionService(BaseService):
             return {"success": False, "message": "Миссия не найдена"}
 
         if user_mission.status != MissionStatus.IN_PROGRESS:
-            return {"success": False, "message": "Миссия уже завершена"}
+            return {
+                "success": False,
+                "message": "Миссия уже завершена",
+            }
 
         if datetime.now(timezone.utc) < user_mission.ends_at:
-            return {"success": False, "message": "Миссия ещё выполняется"}
+            return {
+                "success": False,
+                "message": "Миссия ещё выполняется",
+            }
 
         mission: Mission = user_mission.mission
 
@@ -354,7 +378,9 @@ class MissionService(BaseService):
 
         if triggered_event:
             # Событие сработало — создаём запись лога и приостанавливаем миссию
-            return await self._trigger_event(user_mission, triggered_event, characters)
+            return await self._trigger_event(
+                user_mission, triggered_event, characters
+            )
 
         # Нет событий — завершаем сразу
         return await self._finalize_mission(
@@ -366,7 +392,10 @@ class MissionService(BaseService):
     # -------------------------
 
     async def _trigger_event(
-        self, user_mission: UserMission, event, characters: List[Character]
+        self,
+        user_mission: UserMission,
+        event,
+        characters: List[Character],
     ):
         """Создать активное событие и приостановить миссию."""
         from crud.other_crud import (
@@ -375,7 +404,9 @@ class MissionService(BaseService):
         )
 
         # Получаем варианты выбора для этого события
-        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
+        choices = await mission_event_choice_crud.list_by_event(
+            self.session, event.id
+        )
 
         if self.session.in_transaction():
             user_mission.status = MissionStatus.WAITING_EVENT
@@ -433,7 +464,8 @@ class MissionService(BaseService):
                 select(UserMission)
                 .options(selectinload(UserMission.mission))
                 .where(
-                    UserMission.id == user_mission_id, UserMission.user_id == user_id
+                    UserMission.id == user_mission_id,
+                    UserMission.user_id == user_id,
                 )
             )
         ).scalar_one_or_none()
@@ -458,7 +490,9 @@ class MissionService(BaseService):
             return None
 
         event = events[0]  # берём первое событие
-        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
+        choices = await mission_event_choice_crud.list_by_event(
+            self.session, event.id
+        )
 
         return {
             "event_log_id": event_log.id,
@@ -480,7 +514,9 @@ class MissionService(BaseService):
             ],
         }
 
-    async def respond_event(self, user_mission_id: int, user_id: int, choice_type):
+    async def respond_event(
+        self, user_mission_id: int, user_id: int, choice_type
+    ):
         """Обработать выбор игрока по событию."""
 
         from sqlalchemy import select
@@ -497,7 +533,8 @@ class MissionService(BaseService):
                 select(UserMission)
                 .options(selectinload(UserMission.mission))
                 .where(
-                    UserMission.id == user_mission_id, UserMission.user_id == user_id
+                    UserMission.id == user_mission_id,
+                    UserMission.user_id == user_id,
                 )
             )
         ).scalar_one_or_none()
@@ -506,13 +543,19 @@ class MissionService(BaseService):
             return {"success": False, "message": "Миссия не найдена"}
 
         if user_mission.status != MissionStatus.WAITING_EVENT:
-            return {"success": False, "message": "Нет активного события"}
+            return {
+                "success": False,
+                "message": "Нет активного события",
+            }
 
         event_log = await user_mission_event_log_crud.get_active(
             self.session, user_mission_id
         )
         if not event_log:
-            return {"success": False, "message": "Нет активного события"}
+            return {
+                "success": False,
+                "message": "Нет активного события",
+            }
 
         # Загружаем персонажей
         mchars = (
@@ -535,8 +578,12 @@ class MissionService(BaseService):
             return {"success": False, "message": "Событие не найдено"}
 
         event = events[0]
-        choices = await mission_event_choice_crud.list_by_event(self.session, event.id)
-        choice = next((c for c in choices if c.choice_type == choice_type), None)
+        choices = await mission_event_choice_crud.list_by_event(
+            self.session, event.id
+        )
+        choice = next(
+            (c for c in choices if c.choice_type == choice_type), None
+        )
 
         if not choice:
             return {"success": False, "message": "Неверный тип выбора"}
@@ -562,11 +609,17 @@ class MissionService(BaseService):
         # Завершаем миссию
         event_results = [f"{event.description} → {description}"]
         return await self._finalize_mission(
-            user_mission, characters, success=success, event_results=event_results
+            user_mission,
+            characters,
+            success=success,
+            event_results=event_results,
         )
 
     async def _resolve_choice(
-        self, choice, user_mission: UserMission, characters: List[Character]
+        self,
+        choice,
+        user_mission: UserMission,
+        characters: List[Character],
     ):
         """Рассчитать результат выбора игрока. Возвращает (success, description)."""
         from crud.other_crud import user_resource_crud
@@ -598,8 +651,14 @@ class MissionService(BaseService):
                 )
                 chance = min(chance, 95)
                 if randint(1, 100) <= chance:
-                    return True, f"Удалось заговорить зубы! (шанс: {chance}%)"
-                return False, f"Не удалось заговорить зубы. (шанс: {chance}%)"
+                    return (
+                        True,
+                        f"Удалось заговорить зубы! (шанс: {chance}%)",
+                    )
+                return (
+                    False,
+                    f"Не удалось заговорить зубы. (шанс: {chance}%)",
+                )
             return False, "Недостаточно влияния."
 
         if choice.choice_type.value == "fight":
@@ -670,15 +729,19 @@ class MissionService(BaseService):
                 )
                 if resources:
                     resources.money += reward_money if reward_money else 0
-                    resources.influence += reward_influence if reward_influence else 0
+                    resources.influence += (
+                        reward_influence if reward_influence else 0
+                    )
                     resources.wanted_level += wanted_increase
                 else:
                     await user_resource_crud.create(
                         self.session,
                         {
                             "user_id": user_mission.user_id,
-                            "money": reward_money if reward_money else 0,
-                            "influence": reward_influence if reward_influence else 0,
+                            "money": (reward_money if reward_money else 0),
+                            "influence": (
+                                reward_influence if reward_influence else 0
+                            ),
                             "wanted_level": wanted_increase,
                         },
                         commit=False,
@@ -695,7 +758,7 @@ class MissionService(BaseService):
                     "success": success,
                     "events": event_results,
                     "reward_money": reward_money if success else 0,
-                    "reward_influence": reward_influence if success else 0,
+                    "reward_influence": (reward_influence if success else 0),
                     "wanted_increase": wanted_increase,
                 }
 
@@ -714,7 +777,7 @@ class MissionService(BaseService):
                             self.session,
                             {
                                 "user_id": user_mission.user_id,
-                                "money": reward_money if reward_money else 0,
+                                "money": (reward_money if reward_money else 0),
                                 "influence": (
                                     reward_influence if reward_influence else 0
                                 ),

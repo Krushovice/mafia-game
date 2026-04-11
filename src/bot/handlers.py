@@ -5,7 +5,11 @@ import httpx
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    WebAppInfo,
+)
 
 from .config import settings
 
@@ -76,7 +80,9 @@ async def start_bot(token: str):
                 if r.status_code == 200:
                     await message.reply(f"Ваш профиль:\n{r.json()}")
                 else:
-                    await message.reply("Пользователь не найден. Отправьте /start.")
+                    await message.reply(
+                        "Пользователь не найден. Отправьте /start."
+                    )
             except Exception:
                 logger.exception("Error fetching user")
                 await message.reply("Ошибка при запросе профиля.")
@@ -111,7 +117,8 @@ async def start_bot(token: str):
             }
             try:
                 r = await client.get(
-                    f"{settings.api_url}/user_missions", headers=headers
+                    f"{settings.api_url}/user_missions",
+                    headers=headers,
                 )
                 if r.status_code == 200:
                     ums = r.json()

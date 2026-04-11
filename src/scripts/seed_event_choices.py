@@ -15,8 +15,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.db_helper import db_helper
-from core.database.models.enums import EventChoiceType, MissionEventType
-from crud.other_crud import mission_crud, mission_event_choice_crud, mission_event_crud
+from core.database.models.enums import (
+    EventChoiceType,
+    MissionEventType,
+)
+from crud.other_crud import (
+    mission_crud,
+    mission_event_choice_crud,
+    mission_event_crud,
+)
 
 
 async def seed_event_choices():
