@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,14 +15,34 @@ from api.routers import user_missions as user_missions_router
 from core.config import settings
 from core.database.db_helper import db_helper
 from core.logging import setup_logging
+from services.background_tasks import background_tasks_loop
 
 # Configure logging from settings
 setup_logging(level=settings.logging.level, fmt=settings.logging.fmt)
+
+background_task = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global background_task
+    background_task = asyncio.create_task(background_tasks_loop())
+    yield
+    # Shutdown
+    if background_task:
+        background_task.cancel()
+        try:
+            await background_task
+        except asyncio.CancelledError:
+            pass
+
 
 app = FastAPI(
     title=settings.api.title,
     debug=settings.api.debug,
     root_path=settings.api.root_path,
+    lifespan=lifespan,
 )
 
 # CORS for Telegram WebApp
