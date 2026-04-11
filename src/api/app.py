@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.routers import character as character_router
@@ -38,6 +41,9 @@ async def lifespan(app: FastAPI):
             pass
 
 
+import asyncio
+
+
 app = FastAPI(
     title=settings.api.title,
     debug=settings.api.debug,
@@ -63,6 +69,23 @@ app.include_router(equipment_router.router)
 app.include_router(territory_router.router)
 app.include_router(shop_router.router)
 app.include_router(dashboard_router.router)
+
+# Serve Frontend Static Files
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIST_DIR = os.path.join(BASE_DIR, "frontend", "dist")
+
+if os.path.exists(FRONTEND_DIST_DIR):
+    # Mount assets (css, js, images)
+    app.mount(
+        "/assets",
+        StaticFiles(directory=os.path.join(FRONTEND_DIST_DIR, "assets")),
+        name="assets",
+    )
+
+    # Catch-all route to serve index.html for React Router
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        return FileResponse(os.path.join(FRONTEND_DIST_DIR, "index.html"))
 
 
 # Session dependency (routers use `api.dependencies.get_db`)

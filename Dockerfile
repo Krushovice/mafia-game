@@ -8,6 +8,7 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 
 COPY pyproject.toml pyproject.toml
 COPY requirements-bot.txt requirements-bot.txt
+COPY frontend/dist ./frontend/dist
 COPY src src
 
 RUN apt-get update \

@@ -27,7 +27,8 @@
       "Bash(cd *)",
       "Bash(tail *)",
       "Bash(do *)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm run *)"
     ]
   },
   "$version": 3
