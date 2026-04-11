@@ -208,6 +208,10 @@ cython_debug/
 logs/
 *.log
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 # PyPI configuration file
 .pypirc
 
