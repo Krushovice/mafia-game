@@ -204,12 +204,13 @@ class MissionService(BaseService):
     # СТАРТ МИССИИ
     # -------------------------
 
-
     async def refill_missions(self, user_id: int) -> None:
-        """Ensure user has at least 3 available missions on the map."""
+        """Ensure user has at least 3 available missions on the map.
+        Filters out missions that are impossible with current characters.
+        """
         from sqlalchemy import select, func
-        from core.database.models import Mission, UserMission
-        from crud.other_crud import user_mission_crud, mission_crud
+        from core.database.models import Character, Mission, UserMission
+        from crud.other_crud import mission_crud, user_mission_crud
 
         result = await self.session.execute(
             select(func.count(UserMission.id)).where(
@@ -222,19 +223,59 @@ class MissionService(BaseService):
         if count >= 3:
             return
 
-        templates = await mission_crud.list(self.session)
-        if not templates:
+        # Get user's free characters to estimate capability
+        chars_result = await self.session.execute(
+            select(Character).where(
+                Character.user_id == user_id, Character.is_busy == False
+            )
+        )
+        free_chars = chars_result.scalars().all()
+
+        if not free_chars:
             return
+
+        # Calculate max potential stats (sum of best 3 characters)
+        # Sort by total stats descending
+        top_chars = sorted(
+            free_chars,
+            key=lambda c: c.power + c.intellect + c.agility,
+            reverse=True,
+        )[:3]
+
+        max_power = sum(c.power for c in top_chars)
+        max_intellect = sum(c.intellect for c in top_chars)
+        max_agility = sum(c.agility for c in top_chars)
+        max_slots = len(free_chars)
+
+        # Fetch and filter templates
+        templates = await mission_crud.list(self.session)
+        possible = [
+            t
+            for t in templates
+            if (
+                t.power_required <= max_power
+                and t.intellect_required <= max_intellect
+                and t.agility_required <= max_agility
+                and t.slots <= max_slots
+            )
+        ]
+
+        if not possible:
+            possible = templates  # Fallback to any if stuck
 
         needed = 3 - count
         for _ in range(needed):
-            template = random.choice(templates)
+            template = random.choice(possible)
             is_flash = random.random() < 0.1
             available_until = None
-            location_name = f"Район {random.choice(['Альфа', 'Бета', 'Гамма', 'Дельта'])}"
-            
+            location_name = (
+                f"Район {random.choice(['Альфа', 'Бета', 'Гамма', 'Дельта'])}"
+            )
+
             if is_flash:
-                available_until = datetime.now(timezone.utc) + timedelta(minutes=random.randint(30, 60))
+                available_until = datetime.now(timezone.utc) + timedelta(
+                    minutes=random.randint(30, 60)
+                )
                 location_name = f"⚡ {location_name}"
 
             await user_mission_crud.create(
@@ -268,17 +309,21 @@ class MissionService(BaseService):
             }
 
         from crud.other_crud import user_mission_crud
-        
+
         # Проверка wanted
         from crud.other_crud import user_resource_crud
+
         resources = await user_resource_crud.get_by_user(self.session, user_id)
         if resources and resources.wanted_level > 80:
-            return {"success": False, "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения."}
+            return {
+                "success": False,
+                "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения.",
+            }
 
         user_mission = await user_mission_crud.get(self.session, user_mission_id)
         if not user_mission:
             return {"success": False, "message": "Миссия не найдена"}
-        
+
         if user_mission.user_id != user_id:
             return {"success": False, "message": "Это не ваша миссия"}
 
@@ -292,7 +337,7 @@ class MissionService(BaseService):
                 expire_time = expire_time.replace(tzinfo=timezone.utc)
             if datetime.now(timezone.utc) > expire_time:
                 return {"success": False, "message": "Время миссии истекло"}
-                
+
         mission = await self.get(user_mission.mission_id)
         if not mission:
             return {"success": False, "message": "Шаблон миссии не найден"}

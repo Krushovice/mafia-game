@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies import get_db
-from crud.other_crud import tool_crud, weapon_crud
+from api.dependencies import get_current_user, get_db
+from crud.other_crud import character_crud, tool_crud, weapon_crud
 from schemas import ToolRead, WeaponRead
 from schemas.weapon_tool_schemas import ToolCreate, WeaponCreate
 
@@ -17,7 +17,12 @@ router = APIRouter(prefix="/equipment", tags=["Equipment"])
 async def create_weapon(
     data: WeaponCreate,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверка: персонаж должен принадлежать пользователю
+    char = await character_crud.get(session, data.owner_id)
+    if not char or char.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Character not found or not yours")
     payload = data.model_dump()
     weapon = await weapon_crud.create(session, payload)
     return weapon
@@ -30,7 +35,12 @@ async def create_weapon(
 async def list_weapons_by_owner(
     owner_id: int,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверка: персонаж должен принадлежать пользователю
+    char = await character_crud.get(session, owner_id)
+    if not char or char.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Character not found or not yours")
     weapons = await weapon_crud.list_by_owner(session, owner_id)
     return weapons
 
@@ -39,13 +49,27 @@ async def list_weapons_by_owner(
 async def delete_weapon(
     weapon_id: int,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверяем владение через CRUD или SQL, но проще найти оружие и проверить owner
+    from crud.other_crud import weapon_crud
+
+    # Нужно загрузить weapon с owner
+    from sqlalchemy import select
+    from core.database.models import Weapon
+    from sqlalchemy.orm import selectinload
+
+    res = await session.execute(
+        select(Weapon).options(selectinload(Weapon.owner)).where(Weapon.id == weapon_id)
+    )
+    weapon = res.scalar_one_or_none()
+
+    if not weapon:
+        raise HTTPException(status_code=404, detail="Weapon not found")
+    if weapon.owner.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
     deleted = await weapon_crud.delete(session, weapon_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=404,
-            detail="Weapon not found",
-        )
     return {"success": True}
 
 
@@ -57,7 +81,12 @@ async def delete_weapon(
 async def create_tool(
     data: ToolCreate,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверка: персонаж должен принадлежать пользователю
+    char = await character_crud.get(session, data.owner_id)
+    if not char or char.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Character not found or not yours")
     payload = data.model_dump()
     tool = await tool_crud.create(session, payload)
     return tool
@@ -70,7 +99,12 @@ async def create_tool(
 async def list_tools_by_owner(
     owner_id: int,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверка: персонаж должен принадлежать пользователю
+    char = await character_crud.get(session, owner_id)
+    if not char or char.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Character not found or not yours")
     tools = await tool_crud.list_by_owner(session, owner_id)
     return tools
 
@@ -79,11 +113,22 @@ async def list_tools_by_owner(
 async def delete_tool(
     tool_id: int,
     session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
+    # Проверяем владение
+    from sqlalchemy import select
+    from core.database.models import Tool
+    from sqlalchemy.orm import selectinload
+
+    res = await session.execute(
+        select(Tool).options(selectinload(Tool.owner)).where(Tool.id == tool_id)
+    )
+    tool = res.scalar_one_or_none()
+
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    if tool.owner.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
     deleted = await tool_crud.delete(session, tool_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=404,
-            detail="Tool not found",
-        )
     return {"success": True}

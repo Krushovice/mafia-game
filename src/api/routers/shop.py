@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user, get_db
+from crud.other_crud import character_crud
 from schemas.shop_item_schemas import ShopItemRead
+from schemas.shop_schemas import ShopPurchaseRequest
 from services.shop_service import ShopService
 
 router = APIRouter(prefix="/shop", tags=["Shop"])
@@ -21,29 +23,31 @@ async def list_shop_items(
     return await service.list_available()
 
 
-@router.post("/buy/{item_id}")
+@router.post("/buy")
 async def buy_item(
-    item_id: int,
-    character_id: int | None = None,
+    body: ShopPurchaseRequest,
     session: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    """Купить товар. Для оружия и инструментов нужен character_id."""
+    """
+    Купить товар.
+    Для оружия и инструментов нужно передать character_id.
+    """
     service = ShopService(session)
-    result = await service.buy_item(current_user.id, item_id)
 
-    # Если нужно выбрать персонажа (оружие/инструмент)
-    if character_id and result.get("message") and (
-        "character_id" in result.get("message", "")
-    ):
-        result = await service.buy_weapon_for_character(
-            current_user.id, item_id, character_id
-        )
-        # Пробуем купить как инструмент если не оружие
-        if not result.get("success"):
-            result = await service.buy_tool_for_character(
-                current_user.id, item_id, character_id
+    if body.character_id:
+        # Проверяем, что персонаж принадлежит пользователю
+        char = await character_crud.get(session, body.character_id)
+        if not char or char.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="Character not found or not yours"
             )
+
+        result = await service.buy_item_for_character(
+            current_user.id, body.item_id, body.character_id
+        )
+    else:
+        result = await service.buy_item(current_user.id, body.item_id)
 
     if not result.get("success"):
         raise HTTPException(
