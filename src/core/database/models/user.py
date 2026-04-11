@@ -8,6 +8,7 @@ from .base import Base
 
 if TYPE_CHECKING:
     from .character import Character
+    from .shop_item import ShopItem
     from .user_mission import UserMission
     from .user_resource import UserResource
     from .user_territory import UserTerritory
@@ -33,3 +34,6 @@ class User(Base):
     characters: Mapped[list["Character"]] = relationship(back_populates="user")
     missions: Mapped[list["UserMission"]] = relationship(back_populates="user")
     territories: Mapped[list["UserTerritory"]] = relationship(back_populates="user")
+    shop_purchases: Mapped[list["ShopItem"]] = relationship(
+        back_populates="buyer",
+    )

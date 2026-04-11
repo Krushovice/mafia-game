@@ -13,6 +13,7 @@ __all__ = (
     "Tool",
     "Territory",
     "UserTerritory",
+    "ShopItem",
 )
 
 from .base import Base
@@ -29,3 +30,4 @@ from .user_mission_event_log import UserMissionEventLog
 from .user_resource import UserResource
 from .user_territory import UserTerritory
 from .weapon import Weapon
+from .shop_item import ShopItem

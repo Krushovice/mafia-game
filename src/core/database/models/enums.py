@@ -67,3 +67,11 @@ class TerritoryType(str, enum.Enum):
     DISTRICT = "district"
     NEIGHBORHOOD = "neighborhood"
     BOROUGH = "borough"
+
+
+class ShopItemType(str, enum.Enum):
+    """Тип товара в магазине."""
+
+    CHARACTER = "character"
+    WEAPON = "weapon"
+    TOOL = "tool"

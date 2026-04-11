@@ -22,7 +22,8 @@
       "Bash(python3 *)",
       "Bash(sed *)",
       "Bash(alembic *)",
-      "Bash(uv *)"
+      "Bash(uv *)",
+      "Bash(echo *)"
     ]
   },
   "$version": 3

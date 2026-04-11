@@ -10,6 +10,7 @@ from core.database.models import (
     MissionCharacter,
     MissionEvent,
     MissionEventChoice,
+    ShopItem,
     Territory,
     Tool,
     User,
@@ -331,3 +332,23 @@ class CRUDUserTerritory(CRUDBase[UserTerritory]):
 # expose instances
 territory_crud = CRUDTerritory()
 user_territory_crud = CRUDUserTerritory()
+
+
+# ---------------------------------------------------
+# 🔹 ShopItem CRUD
+# ---------------------------------------------------
+class CRUDShopItem(CRUDBase[ShopItem]):
+    def __init__(self):
+        super().__init__(ShopItem)
+
+    async def list_available(self, session: AsyncSession) -> List[ShopItem]:
+        result = await session.execute(
+            select(ShopItem)
+            .where(ShopItem.is_available == True)
+            .order_by(ShopItem.display_order)
+        )
+        return result.scalars().all()
+
+
+# expose instances
+shop_item_crud = CRUDShopItem()

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.routers import character as character_router
 from api.routers import equipment as equipment_router
 from api.routers import mission as mission_router
+from api.routers import shop as shop_router
 from api.routers import territory as territory_router
 from api.routers import user as user_router
 from api.routers import user_missions as user_missions_router
@@ -37,6 +38,7 @@ app.include_router(user_router.router)
 app.include_router(user_missions_router.router)
 app.include_router(equipment_router.router)
 app.include_router(territory_router.router)
+app.include_router(shop_router.router)
 
 
 # Session dependency (routers use `api.dependencies.get_db`)
