@@ -15,7 +15,8 @@ router = APIRouter(prefix="/user_missions", tags=["UserMissions"])
 
 @router.get("/", response_model=list[UserMissionRead])
 async def list_user_missions(
-    session: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)
+    session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     ums = await user_mission_crud.list_by_user(session, current_user.id)
     return ums

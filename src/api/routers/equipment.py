@@ -12,20 +12,29 @@ router = APIRouter(prefix="/equipment", tags=["Equipment"])
 @router.post(
     "/weapons/", response_model=WeaponRead, status_code=status.HTTP_201_CREATED
 )
-async def create_weapon(data: WeaponCreate, session: AsyncSession = Depends(get_db)):
+async def create_weapon(
+    data: WeaponCreate,
+    session: AsyncSession = Depends(get_db),
+):
     payload = data.model_dump()
     w = await weapon_crud.create(session, payload)
     return w
 
 
 @router.get("/weapons/owner/{owner_id}", response_model=list[WeaponRead])
-async def list_weapons_by_owner(owner_id: int, session: AsyncSession = Depends(get_db)):
+async def list_weapons_by_owner(
+    owner_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     ws = await weapon_crud.list_by_owner(session, owner_id)
     return ws
 
 
 @router.delete("/weapons/{weapon_id}")
-async def delete_weapon(weapon_id: int, session: AsyncSession = Depends(get_db)):
+async def delete_weapon(
+    weapon_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     ok = await weapon_crud.delete(session, weapon_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Weapon not found")
@@ -33,20 +42,29 @@ async def delete_weapon(weapon_id: int, session: AsyncSession = Depends(get_db))
 
 
 @router.post("/tools/", response_model=ToolRead, status_code=status.HTTP_201_CREATED)
-async def create_tool(data: ToolCreate, session: AsyncSession = Depends(get_db)):
+async def create_tool(
+    data: ToolCreate,
+    session: AsyncSession = Depends(get_db),
+):
     payload = data.model_dump()
     t = await tool_crud.create(session, payload)
     return t
 
 
 @router.get("/tools/owner/{owner_id}", response_model=list[ToolRead])
-async def list_tools_by_owner(owner_id: int, session: AsyncSession = Depends(get_db)):
+async def list_tools_by_owner(
+    owner_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     ts = await tool_crud.list_by_owner(session, owner_id)
     return ts
 
 
 @router.delete("/tools/{tool_id}")
-async def delete_tool(tool_id: int, session: AsyncSession = Depends(get_db)):
+async def delete_tool(
+    tool_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     ok = await tool_crud.delete(session, tool_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Tool not found")

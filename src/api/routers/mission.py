@@ -36,7 +36,9 @@ async def get_mission(
 
 @router.post("/{mission_id}/events", response_model=MissionEventRead, status_code=201)
 async def create_event(
-    mission_id: int, data: MissionEventCreate, session: AsyncSession = Depends(get_db)
+    mission_id: int,
+    data: MissionEventCreate,
+    session: AsyncSession = Depends(get_db),
 ):
     # create event linked to mission
     payload = data.model_dump()
@@ -46,7 +48,10 @@ async def create_event(
 
 
 @router.get("/{mission_id}/events", response_model=list[MissionEventRead])
-async def list_events(mission_id: int, session: AsyncSession = Depends(get_db)):
+async def list_events(
+    mission_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     evs = await mission_event_crud.list_by_mission(session, mission_id)
     return evs
 

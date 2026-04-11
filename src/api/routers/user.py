@@ -24,7 +24,10 @@ async def create_user(
 
 
 @router.get("/{user_id}", response_model=UserRead)
-async def get_user(user_id: int, session: AsyncSession = Depends(get_db)):
+async def get_user(
+    user_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     service = UserService(session)
     user = await service.get(user_id)
     if not user:
@@ -33,7 +36,10 @@ async def get_user(user_id: int, session: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{user_id}/resources", response_model=UserResourceRead)
-async def get_resources(user_id: int, session: AsyncSession = Depends(get_db)):
+async def get_resources(
+    user_id: int,
+    session: AsyncSession = Depends(get_db),
+):
     service = UserService(session)
     res = await service.get_resources(user_id)
     if not res:

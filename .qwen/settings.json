@@ -21,7 +21,8 @@
       "Bash(pyeof)",
       "Bash(python3 *)",
       "Bash(sed *)",
-      "Bash(alembic *)"
+      "Bash(alembic *)",
+      "Bash(uv *)"
     ]
   },
   "$version": 3
