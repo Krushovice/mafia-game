@@ -20,7 +20,7 @@ class UserMission(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    mission_id: Mapped[int] = mapped_column(ForeignKey("missions.id"))
+    mission_id: Mapped[int | None] = mapped_column(ForeignKey("missions.id"), nullable=True)
 
     status: Mapped[MissionStatus] = mapped_column(
         Enum(MissionStatus, native_enum=False, length=32),
