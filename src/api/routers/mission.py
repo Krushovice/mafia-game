@@ -85,9 +85,7 @@ async def start_mission(
     for cid in body.character_ids:
         c = await character_crud.get(session, cid)
         if not c:
-            raise HTTPException(
-                status_code=404, detail=f"Character {cid} not found"
-            )
+            raise HTTPException(status_code=404, detail=f"Character {cid} not found")
         chars.append(c)
 
     res = await svc.start_mission(current_user.id, mission_id, chars)

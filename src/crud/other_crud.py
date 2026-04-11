@@ -30,9 +30,7 @@ class CRUDCharacter(CRUDBase[Character]):
     def __init__(self):
         super().__init__(Character)
 
-    async def list_with_equipment(
-        self, session: AsyncSession
-    ) -> List[Character]:
+    async def list_with_equipment(self, session: AsyncSession) -> List[Character]:
         result = await session.execute(
             select(Character).options(
                 selectinload(Character.weapons),
@@ -62,9 +60,7 @@ class CRUDWeapon(CRUDBase[Weapon]):
     def __init__(self):
         super().__init__(Weapon)
 
-    async def list_by_owner(
-        self, session: AsyncSession, owner_id: int
-    ) -> List[Weapon]:
+    async def list_by_owner(self, session: AsyncSession, owner_id: int) -> List[Weapon]:
         result = await session.execute(
             select(Weapon).where(Weapon.owner_id == owner_id)
         )
@@ -78,12 +74,8 @@ class CRUDTool(CRUDBase[Tool]):
     def __init__(self):
         super().__init__(Tool)
 
-    async def list_by_owner(
-        self, session: AsyncSession, owner_id: int
-    ) -> List[Tool]:
-        result = await session.execute(
-            select(Tool).where(Tool.owner_id == owner_id)
-        )
+    async def list_by_owner(self, session: AsyncSession, owner_id: int) -> List[Tool]:
+        result = await session.execute(select(Tool).where(Tool.owner_id == owner_id))
         return result.scalars().all()
 
 
@@ -269,9 +261,7 @@ class CRUDTerritory(CRUDBase[Territory]):
 
         # Already captured territory IDs
         captured = await session.execute(
-            select(UserTerritory.territory_id).where(
-                UserTerritory.user_id == user_id
-            )
+            select(UserTerritory.territory_id).where(UserTerritory.user_id == user_id)
         )
         captured_ids = {row[0] for row in captured.fetchall()}
 
@@ -279,8 +269,7 @@ class CRUDTerritory(CRUDBase[Territory]):
         return [
             t
             for t in all_territories
-            if t.id not in captured_ids
-            and user_influence >= t.influence_required
+            if t.id not in captured_ids and user_influence >= t.influence_required
         ]
 
     async def get_capture_candidates(
@@ -290,9 +279,7 @@ class CRUDTerritory(CRUDBase[Territory]):
         from core.database.models.user_territory import UserTerritory
 
         captured = await session.execute(
-            select(UserTerritory.territory_id).where(
-                UserTerritory.user_id == user_id
-            )
+            select(UserTerritory.territory_id).where(UserTerritory.user_id == user_id)
         )
         captured_ids = {row[0] for row in captured.fetchall()}
 
@@ -323,9 +310,7 @@ class CRUDUserTerritory(CRUDBase[UserTerritory]):
     ) -> dict:
         """Calculate total passive income from all captured territories."""
         user_territories = await self.list_by_user(session, user_id)
-        total_money = sum(
-            ut.territory.passive_income_money for ut in user_territories
-        )
+        total_money = sum(ut.territory.passive_income_money for ut in user_territories)
         total_influence = sum(
             ut.territory.passive_income_influence for ut in user_territories
         )

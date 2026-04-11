@@ -106,9 +106,7 @@ class TestValidateInitData:
 
         # We need a valid hash for this test, but the JSON is invalid
         # The hash won't match anyway, but let's test the flow
-        data_check_string = "\n".join(
-            f"{k}={v}" for k, v in sorted(data.items())
-        )
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
         secret_key = hashlib.sha256(self.BOT_TOKEN.encode("utf-8")).digest()
         hash_val = hmac.new(
             secret_key,

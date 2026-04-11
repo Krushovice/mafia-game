@@ -15,9 +15,7 @@ async def create_user(
     session: AsyncSession = Depends(get_db),
 ):
     service = UserService(session)
-    user = await service.create_user(
-        {"telegram_id": telegram_id, "username": username}
-    )
+    user = await service.create_user({"telegram_id": telegram_id, "username": username})
     # ensure resources
     await service.ensure_resources(
         user.id, {"money": 1000, "influence": 10, "wanted_level": 0}

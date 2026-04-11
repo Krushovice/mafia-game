@@ -22,9 +22,7 @@ async def get_current_user(
             detail="Database session not provided to auth dependency",
         )
     if telegram_id is None:
-        raise HTTPException(
-            status_code=401, detail="X-Telegram-Id header required"
-        )
+        raise HTTPException(status_code=401, detail="X-Telegram-Id header required")
     svc = UserService(db)
     user = await svc.get_or_create_by_telegram(telegram_id, username)
     return user
@@ -60,9 +58,7 @@ async def get_current_user_tma(
         raise HTTPException(status_code=401, detail="No user id in initData")
 
     svc = UserService(db)
-    user = await svc.get_or_create_by_telegram(
-        telegram_id, username or first_name
-    )
+    user = await svc.get_or_create_by_telegram(telegram_id, username or first_name)
     return user
 
 

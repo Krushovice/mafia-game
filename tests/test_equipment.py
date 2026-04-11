@@ -98,7 +98,5 @@ async def test_mission_and_character_list_helpers(db_session):
         db_session,
         {"name": "Fist", "bonus_power": 1, "owner_id": ch.id},
     )
-    chars = await character_crud.list_by_user_with_equipment(
-        db_session, user.id
-    )
+    chars = await character_crud.list_by_user_with_equipment(db_session, user.id)
     assert any(c.id == ch.id for c in chars)

@@ -19,9 +19,7 @@ class CharacterService(BaseService):
             return char
         else:
             async with self.session.begin():
-                char = await self.crud.create(
-                    self.session, payload, commit=False
-                )
+                char = await self.crud.create(self.session, payload, commit=False)
                 await self.session.flush()
                 return char
 

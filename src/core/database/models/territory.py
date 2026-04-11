@@ -26,9 +26,7 @@ class Territory(Base):
         default=TerritoryType.DISTRICT,
     )
 
-    description: Mapped[str] = mapped_column(
-        String(256), default="", server_default=""
-    )
+    description: Mapped[str] = mapped_column(String(256), default="", server_default="")
 
     # Требования для миссии захвата
     influence_required: Mapped[int] = mapped_column(Integer, default=25)

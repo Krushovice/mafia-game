@@ -18,17 +18,11 @@ class MissionCharacter(Base):
     user_mission_id: Mapped[int] = mapped_column(
         ForeignKey("user_missions.id"), index=True
     )
-    character_id: Mapped[int] = mapped_column(
-        ForeignKey("characters.id"), index=True
-    )
+    character_id: Mapped[int] = mapped_column(ForeignKey("characters.id"), index=True)
     slot_number: Mapped[int] = mapped_column(Integer)
 
-    user_mission: Mapped["UserMission"] = relationship(
-        back_populates="characters"
-    )
-    character: Mapped["Character"] = relationship(
-        back_populates="mission_links"
-    )
+    user_mission: Mapped["UserMission"] = relationship(back_populates="characters")
+    character: Mapped["Character"] = relationship(back_populates="mission_links")
     __table_args__ = (
         # prevent same character being linked twice to same mission instance
         UniqueConstraint(

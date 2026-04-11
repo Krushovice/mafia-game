@@ -45,7 +45,5 @@ class UserMissionEventLog(Base):
         Text, nullable=True, default=None
     )
 
-    user_mission: Mapped["UserMission"] = relationship(
-        back_populates="event_logs"
-    )
+    user_mission: Mapped["UserMission"] = relationship(back_populates="event_logs")
     event_choice: Mapped["MissionEventChoice | None"] = relationship()

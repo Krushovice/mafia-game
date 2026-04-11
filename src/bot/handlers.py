@@ -80,9 +80,7 @@ async def start_bot(token: str):
                 if r.status_code == 200:
                     await message.reply(f"Ваш профиль:\n{r.json()}")
                 else:
-                    await message.reply(
-                        "Пользователь не найден. Отправьте /start."
-                    )
+                    await message.reply("Пользователь не найден. Отправьте /start.")
             except Exception:
                 logger.exception("Error fetching user")
                 await message.reply("Ошибка при запросе профиля.")

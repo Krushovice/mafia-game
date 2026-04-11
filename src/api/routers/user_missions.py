@@ -32,9 +32,7 @@ async def get_active_event(
     svc = MissionService(session)
     result = await svc.get_active_event(um_id, current_user.id)
     if result is None:
-        raise HTTPException(
-            status_code=404, detail="No active event for this mission"
-        )
+        raise HTTPException(status_code=404, detail="No active event for this mission")
     return result
 
 

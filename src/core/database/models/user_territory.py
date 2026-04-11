@@ -31,6 +31,4 @@ class UserTerritory(Base):
 
     # Связи
     user: Mapped["User"] = relationship(back_populates="territories")
-    territory: Mapped["Territory"] = relationship(
-        back_populates="user_territories"
-    )
+    territory: Mapped["Territory"] = relationship(back_populates="user_territories")

@@ -65,7 +65,5 @@ async def list_characters(
     # list current user's characters with equipment
     from crud.other_crud import character_crud
 
-    chars = await character_crud.list_by_user_with_equipment(
-        session, current_user.id
-    )
+    chars = await character_crud.list_by_user_with_equipment(session, current_user.id)
     return chars
