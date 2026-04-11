@@ -1,4 +1,4 @@
-"""Seed 8 default territories."""
+"""Seed 8 default territories with balanced economy."""
 
 import asyncio
 import sys
@@ -12,6 +12,8 @@ from core.database.db_helper import db_helper
 from core.database.models.enums import TerritoryType
 from crud.other_crud import territory_crud
 
+# Target: ~500 coins/tick (10 min) for 8 territories => ~3000/hour
+# Values scaled down from original.
 TERRITORIES = [
     {
         "name": "Маленький квартал",
@@ -23,8 +25,8 @@ TERRITORIES = [
         "agility_required": 15,
         "reward_influence": 15,
         "reward_money": 200,
-        "passive_income_money": 50,
-        "passive_income_influence": 1,
+        "passive_income_money": 22,  # ~220 total for 8
+        "passive_income_influence": 0,
         "display_order": 1,
     },
     {
@@ -37,8 +39,8 @@ TERRITORIES = [
         "agility_required": 20,
         "reward_influence": 15,
         "reward_money": 300,
-        "passive_income_money": 75,
-        "passive_income_influence": 1,
+        "passive_income_money": 33,
+        "passive_income_influence": 0,
         "display_order": 2,
     },
     {
@@ -51,8 +53,8 @@ TERRITORIES = [
         "agility_required": 20,
         "reward_influence": 20,
         "reward_money": 400,
-        "passive_income_money": 100,
-        "passive_income_influence": 1,
+        "passive_income_money": 45,
+        "passive_income_influence": 0,
         "display_order": 3,
     },
     {
@@ -65,8 +67,8 @@ TERRITORIES = [
         "agility_required": 25,
         "reward_influence": 20,
         "reward_money": 500,
-        "passive_income_money": 125,
-        "passive_income_influence": 1,
+        "passive_income_money": 55,
+        "passive_income_influence": 0,
         "display_order": 4,
     },
     {
@@ -79,8 +81,8 @@ TERRITORIES = [
         "agility_required": 25,
         "reward_influence": 15,
         "reward_money": 600,
-        "passive_income_money": 150,
-        "passive_income_influence": 1,
+        "passive_income_money": 67,
+        "passive_income_influence": 0,
         "display_order": 5,
     },
     {
@@ -93,8 +95,8 @@ TERRITORIES = [
         "agility_required": 30,
         "reward_influence": 10,
         "reward_money": 700,
-        "passive_income_money": 175,
-        "passive_income_influence": 1,
+        "passive_income_money": 78,
+        "passive_income_influence": 0,
         "display_order": 6,
     },
     {
@@ -107,8 +109,8 @@ TERRITORIES = [
         "agility_required": 30,
         "reward_influence": 10,
         "reward_money": 800,
-        "passive_income_money": 200,
-        "passive_income_influence": 1,
+        "passive_income_money": 90,
+        "passive_income_influence": 0,
         "display_order": 7,
     },
     {
@@ -121,8 +123,8 @@ TERRITORIES = [
         "agility_required": 40,
         "reward_influence": 10,
         "reward_money": 1000,
-        "passive_income_money": 225,
-        "passive_income_influence": 1,
+        "passive_income_money": 100,
+        "passive_income_influence": 0,
         "display_order": 8,
     },
 ]
@@ -130,7 +132,6 @@ TERRITORIES = [
 
 async def seed_territories():
     async with AsyncSession(bind=db_helper.engine) as session:
-        # Check if territories already exist
         existing = await territory_crud.list(session)
         if existing:
             print(f"✅ {len(existing)} territories already exist, skipping")

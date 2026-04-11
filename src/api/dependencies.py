@@ -59,6 +59,14 @@ async def get_current_user_tma(
 
     svc = UserService(db)
     user = await svc.get_or_create_by_telegram(telegram_id, username or first_name)
+
+    # Passive income calculation
+    from services.territory_service import TerritoryService
+
+    territory_svc = TerritoryService(db)
+    income = await territory_svc.collect_passive_income(user.id)
+    # Note: Session commits happen at the end of request via dependency
+
     return user
 
 

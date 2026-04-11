@@ -216,16 +216,78 @@ class TerritoryService(BaseService):
         )
         return True
 
-    async def apply_passive_income(self, user_id: int) -> dict:
-        """Начислить пассивный доход от территорий."""
-        income = await self.user_territory_crud.get_total_passive_income(
-            self.session, user_id
-        )
-        if income["money"] == 0 and income["influence"] == 0:
-            return income
+    async def collect_passive_income(self, user_id: int) -> dict:
+        """Calculate and apply passive income based on time passed.
 
-        resources = await self.user_resource_crud.get_by_user(self.session, user_id)
-        if resources:
-            resources.money += income["money"]
-            resources.influence += income["influence"]
-        return income
+        Online: Full income + influence accumulation.
+        Offline (>15 min gap): Reduced income (5%), no influence.
+        """
+        from crud.other_crud import user_resource_crud, user_territory_crud
+
+        resources = await user_resource_crud.get_by_user(self.session, user_id)
+        if not resources:
+            return {"money_gained": 0, "influence_gained": 0}
+
+        # Get territories
+        user_territories = await user_territory_crud.list_by_user(self.session, user_id)
+        if not user_territories:
+            return {"money_gained": 0, "influence_gained": 0}
+
+        # Total income per tick (10 min)
+        total_income_per_tick = sum(
+            ut.territory.passive_income_money for ut in user_territories
+        )
+        influence_per_cycle = 0.2 + (0.1 * len(user_territories))
+
+        now = datetime.now(timezone.utc)
+        last_tick = resources.last_income_tick
+
+        # Make last_tick timezone aware if naive
+        if last_tick.tzinfo is None:
+            last_tick = last_tick.replace(tzinfo=timezone.utc)
+
+        delta = now - last_tick
+        minutes_passed = delta.total_seconds() / 60.0
+
+        # Cap offline time to 24 hours to prevent breaking economy
+        if minutes_passed > 24 * 60:
+            minutes_passed = 24 * 60
+            now = last_tick + timedelta(minutes=minutes_passed)
+
+        money_gained = 0
+        influence_gained = 0
+
+        if minutes_passed < 15:
+            # --- ONLINE ---
+            # Count towards playtime
+            resources.active_playtime_minutes += minutes_passed
+
+            # Calculate income: (minutes / 10) * rate
+            ticks = minutes_passed / 10.0
+            money_gained = int(ticks * total_income_per_tick)
+
+            # Check influence reward (every 2 hours / 120 mins)
+            if resources.active_playtime_minutes >= 120:
+                influence_gained = influence_per_cycle
+                resources.influence += influence_gained
+                resources.active_playtime_minutes -= 120
+        else:
+            # --- OFFLINE ---
+            # Reset playtime? No, keep it or decay it? Let's keep it.
+            # Calculate income with 5% rate
+            ticks = minutes_passed / 10.0
+            money_gained = int(ticks * total_income_per_tick * 0.05)
+
+        if money_gained > 0:
+            resources.money += money_gained
+
+        # Update tick time
+        resources.last_income_tick = now
+        resources.updated_at = now
+
+        return {
+            "money_gained": money_gained,
+            "influence_gained": influence_gained,
+            "active_playtime": resources.active_playtime_minutes,
+            "total_income_per_tick": total_income_per_tick,
+        }

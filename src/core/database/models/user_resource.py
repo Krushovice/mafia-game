@@ -20,6 +20,14 @@ class UserResource(Base):
     influence: Mapped[int] = mapped_column(Integer, default=0)
     wanted_level: Mapped[int] = mapped_column(Integer, default=0)
 
+    # Passive income tracking
+    last_income_tick: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, server_default=func.now()
+    )
+    active_playtime_minutes: Mapped[float] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, server_default=func.now()
     )
