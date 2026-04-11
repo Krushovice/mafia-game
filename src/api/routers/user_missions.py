@@ -6,7 +6,6 @@ from crud.other_crud import user_mission_crud
 from schemas.event_choice_schemas import (
     ActiveEventRead,
     EventChoiceResponse,
-    MissionEventChoiceRead,
 )
 from schemas.user_mission_schemas import UserMissionRead
 from services.mission_service import MissionService

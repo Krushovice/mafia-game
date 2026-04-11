@@ -14,10 +14,35 @@ async def test_start_and_complete_mission(db_session):
     user = await user_svc.get_or_create_by_telegram(9999, "missioner")
 
     # create character
-    char = await character_crud.create(db_session, {"user_id": user.id, "name": "Joe", "power": 10, "intellect": 1, "agility": 1, "loyalty": 0, "is_busy": False})
+    char = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "Joe",
+            "power": 10,
+            "intellect": 1,
+            "agility": 1,
+            "loyalty": 0,
+            "is_busy": False,
+        },
+    )
 
     # create mission
-    mission = await mission_crud.create(db_session, {"name": "Test", "description": "t", "duration": 1, "reward_money": 100, "reward_influence": 5, "difficulty": "easy", "slots": 1, "power_required": 5, "intellect_required": 0, "agility_required": 0})
+    mission = await mission_crud.create(
+        db_session,
+        {
+            "name": "Test",
+            "description": "t",
+            "duration": 1,
+            "reward_money": 100,
+            "reward_influence": 5,
+            "difficulty": "easy",
+            "slots": 1,
+            "power_required": 5,
+            "intellect_required": 0,
+            "agility_required": 0,
+        },
+    )
 
     svc = MissionService(db_session)
     res = await svc.start_mission(user.id, mission.id, [char])

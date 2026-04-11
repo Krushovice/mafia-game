@@ -5,7 +5,11 @@ import logging.handlers
 from pathlib import Path
 
 
-def setup_logging(level: str = "INFO", fmt: str = "%(asctime)s %(levelname)s %(name)s: %(message)s", log_dir: str = "logs") -> None:
+def setup_logging(
+    level: str = "INFO",
+    fmt: str = "%(asctime)s %(levelname)s %(name)s: %(message)s",
+    log_dir: str = "logs",
+) -> None:
     """Configure logging with both console and file handlers.
 
     Creates:

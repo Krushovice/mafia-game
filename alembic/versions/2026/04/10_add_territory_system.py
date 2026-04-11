@@ -37,9 +37,7 @@ def upgrade() -> None:
             nullable=False,
             server_default="25",
         ),
-        sa.Column(
-            "power_required", sa.Integer(), nullable=False, server_default="20"
-        ),
+        sa.Column("power_required", sa.Integer(), nullable=False, server_default="20"),
         sa.Column(
             "intellect_required",
             sa.Integer(),
@@ -68,9 +66,7 @@ def upgrade() -> None:
             nullable=False,
             server_default="1",
         ),
-        sa.Column(
-            "display_order", sa.Integer(), nullable=False, server_default="0"
-        ),
+        sa.Column("display_order", sa.Integer(), nullable=False, server_default="0"),
         sa.Column(
             "created_at",
             sa.DateTime(),

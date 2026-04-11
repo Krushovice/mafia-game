@@ -225,7 +225,7 @@ class CRUDUserMissionEventLog(CRUDBase[UserMissionEventLog]):
         result = await session.execute(
             select(UserMissionEventLog).where(
                 UserMissionEventLog.user_mission_id == user_mission_id,
-                UserMissionEventLog.resolved == False,
+                not UserMissionEventLog.resolved,
             )
         )
         return result.scalar_one_or_none()

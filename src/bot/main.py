@@ -1,8 +1,8 @@
 import asyncio
-import logging
 import os
 
 from core.logging import setup_logging
+
 from .config import settings
 from .handlers import start_bot
 

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.models import Character, Mission, UserMission
-from core.database.models.enums import MissionEventType, MissionStatType, MissionStatus
+from core.database.models.enums import MissionStatType, MissionStatus
 from crud.other_crud import (
     character_crud,
     mission_character_crud,
@@ -419,14 +419,14 @@ class MissionService(BaseService):
 
     async def get_active_event(self, user_mission_id: int, user_id: int):
         """Получить текущее активное событие миссии."""
-        from crud.other_crud import (
-            mission_event_choice_crud,
-            user_mission_event_log_crud,
-        )
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
 
         from core.database.models import UserMission
+        from crud.other_crud import (
+            mission_event_choice_crud,
+            user_mission_event_log_crud,
+        )
 
         user_mission = (
             await self.session.execute(
@@ -482,16 +482,15 @@ class MissionService(BaseService):
 
     async def respond_event(self, user_mission_id: int, user_id: int, choice_type):
         """Обработать выбор игрока по событию."""
-        from random import randint
 
-        from crud.other_crud import (
-            mission_event_choice_crud,
-            user_mission_event_log_crud,
-        )
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
 
         from core.database.models import MissionCharacter, UserMission
+        from crud.other_crud import (
+            mission_event_choice_crud,
+            user_mission_event_log_crud,
+        )
 
         user_mission = (
             await self.session.execute(
@@ -605,8 +604,9 @@ class MissionService(BaseService):
 
         if choice.choice_type.value == "fight":
             # Бой — зависит от оружия и силы
-            from core.database.models import Weapon
             from sqlalchemy import select
+
+            from core.database.models import Weapon
 
             total_power = sum(c.power for c in characters)
             weapon_count = 0

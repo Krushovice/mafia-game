@@ -9,6 +9,7 @@ class MissionEventCreate(BaseModel):
     chance: int = 10
     description: str = ""
 
+
 class MissionEventRead(BaseModel):
     id: int
     mission_id: int

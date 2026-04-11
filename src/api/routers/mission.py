@@ -35,7 +35,9 @@ async def get_mission(
 
 
 @router.post("/{mission_id}/events", response_model=MissionEventRead, status_code=201)
-async def create_event(mission_id: int, data: MissionEventCreate, session: AsyncSession = Depends(get_db)):
+async def create_event(
+    mission_id: int, data: MissionEventCreate, session: AsyncSession = Depends(get_db)
+):
     # create event linked to mission
     payload = data.model_dump()
     payload["mission_id"] = mission_id
@@ -50,10 +52,16 @@ async def list_events(mission_id: int, session: AsyncSession = Depends(get_db)):
 
 
 @router.post("/{mission_id}/start", response_model=UserMissionRead)
-async def start_mission(mission_id: int, body: UserMissionStart, session: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
+async def start_mission(
+    mission_id: int,
+    body: UserMissionStart,
+    session: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     svc = MissionService(session)
     # load characters for validation
     from crud.other_crud import character_crud
+
     chars = []
     for cid in body.character_ids:
         c = await character_crud.get(session, cid)
@@ -67,6 +75,7 @@ async def start_mission(mission_id: int, body: UserMissionStart, session: AsyncS
 
     # return created user mission
     from crud.other_crud import user_mission_crud
+
     um = await user_mission_crud.get(session, res["mission_id"])
     return um
 
@@ -74,5 +83,6 @@ async def start_mission(mission_id: int, body: UserMissionStart, session: AsyncS
 @router.get("/", response_model=list[MissionRead])
 async def list_missions(session: AsyncSession = Depends(get_db)):
     from crud.other_crud import mission_crud
+
     missions = await mission_crud.list_with_events(session)
     return missions

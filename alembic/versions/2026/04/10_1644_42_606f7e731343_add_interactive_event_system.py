@@ -39,22 +39,16 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column(
-            "label", sa.String(length=64), server_default="", nullable=False
-        ),
+        sa.Column("label", sa.String(length=64), server_default="", nullable=False),
         sa.Column("description", sa.Text(), server_default="", nullable=False),
-        sa.Column(
-            "money_cost", sa.Integer(), server_default="0", nullable=False
-        ),
+        sa.Column("money_cost", sa.Integer(), server_default="0", nullable=False),
         sa.Column(
             "influence_required",
             sa.Integer(),
             server_default="0",
             nullable=False,
         ),
-        sa.Column(
-            "power_required", sa.Integer(), server_default="0", nullable=False
-        ),
+        sa.Column("power_required", sa.Integer(), server_default="0", nullable=False),
         sa.Column(
             "success_chance_base",
             sa.Integer(),
@@ -91,9 +85,7 @@ def upgrade() -> None:
             ),
             nullable=True,
         ),
-        sa.Column(
-            "resolved", sa.Boolean(), server_default="false", nullable=False
-        ),
+        sa.Column("resolved", sa.Boolean(), server_default="false", nullable=False),
         sa.Column("success", sa.Boolean(), nullable=True),
         sa.Column("result_description", sa.Text(), nullable=True),
         sa.ForeignKeyConstraint(

@@ -11,6 +11,7 @@ class WeaponRead(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ToolRead(BaseModel):
     id: int
     name: str
@@ -19,6 +20,7 @@ class ToolRead(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class CharacterRead(BaseModel):
     id: int
@@ -32,6 +34,7 @@ class CharacterRead(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class CharacterCreate(BaseModel):
     name: str

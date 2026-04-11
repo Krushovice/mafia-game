@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import Territory, UserMission
-from core.database.models.enums import MissionDifficulty, MissionStatus, MissionType
+from core.database.models.enums import MissionStatus
 from crud.other_crud import (
     character_crud,
     territory_crud,
@@ -34,9 +33,7 @@ class TerritoryService(BaseService):
         result = []
         for t in all_territories:
             is_captured = t.id in captured_ids
-            can_attempt = (
-                user_influence >= t.influence_required and not is_captured
-            )
+            can_attempt = user_influence >= t.influence_required and not is_captured
             result.append(
                 {
                     "id": t.id,

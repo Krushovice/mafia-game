@@ -7,10 +7,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from .user import User
     from .mission_character import MissionCharacter
-    from .weapon import Weapon
     from .tool import Tool
+    from .user import User
+    from .weapon import Weapon
 
 from .enums import CharacterRole, CharacterTrait
 
@@ -39,24 +39,22 @@ class Character(Base):
         ),
         default=CharacterTrait.QUIET,
     )
-    
 
     power: Mapped[int] = mapped_column(Integer)
     agility: Mapped[int] = mapped_column(Integer)
     intellect: Mapped[int] = mapped_column(Integer)
     loyalty: Mapped[int] = mapped_column(Integer)
 
-
     is_busy: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now,
-        server_default=func.now()
+        DateTime, default=datetime.now, server_default=func.now()
     )
 
     user: Mapped["User"] = relationship(back_populates="characters")
-    mission_links: Mapped[list["MissionCharacter"]] = relationship(back_populates="character")
+    mission_links: Mapped[list["MissionCharacter"]] = relationship(
+        back_populates="character"
+    )
     # Связи с оружием и инструментами
     weapons: Mapped[list["Weapon"]] = relationship(back_populates="owner")
     tools: Mapped[list["Tool"]] = relationship(back_populates="owner")

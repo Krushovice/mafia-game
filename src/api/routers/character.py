@@ -12,7 +12,7 @@ router = APIRouter(prefix="/characters", tags=["Characters"])
 async def create_character(
     data: CharacterCreate,
     session: AsyncSession = Depends(get_db),
-    current_user = Depends(lambda db=Depends(get_db): get_current_user(db=db)),
+    current_user=Depends(lambda db=Depends(get_db): get_current_user(db=db)),
 ):
     service = CharacterService(session)
     payload = data.model_dump()
@@ -34,13 +34,12 @@ async def get_character(
     return character
 
 
-
 @router.patch("/{character_id}", response_model=CharacterRead)
 async def update_character(
     character_id: int,
     data: dict,
     session: AsyncSession = Depends(get_db),
-    current_user = Depends(lambda db=Depends(get_db): get_current_user(db=db)),
+    current_user=Depends(lambda db=Depends(get_db): get_current_user(db=db)),
 ):
     service = CharacterService(session)
     existing = await service.get(character_id)
@@ -57,9 +56,10 @@ async def update_character(
 @router.get("/", response_model=list[CharacterRead])
 async def list_characters(
     session: AsyncSession = Depends(get_db),
-    current_user = Depends(lambda db=Depends(get_db): get_current_user(db=db)),
+    current_user=Depends(lambda db=Depends(get_db): get_current_user(db=db)),
 ):
     # list current user's characters with equipment
     from crud.other_crud import character_crud
+
     chars = await character_crud.list_by_user_with_equipment(session, current_user.id)
     return chars

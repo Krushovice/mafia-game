@@ -9,6 +9,7 @@ from .base import Base
 if TYPE_CHECKING:
     from .user import User
 
+
 class UserResource(Base):
     __tablename__ = "user_resources"
 
@@ -20,9 +21,7 @@ class UserResource(Base):
     wanted_level: Mapped[int] = mapped_column(Integer, default=0)
 
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now,
-        server_default=func.now()
+        DateTime, default=datetime.now, server_default=func.now()
     )
 
     user: Mapped["User"] = relationship(back_populates="resources")

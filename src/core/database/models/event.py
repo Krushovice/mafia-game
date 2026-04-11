@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON
+from sqlalchemy import JSON, ForeignKey, Integer
 from sqlalchemy import Enum as PgEnum
-from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
 if TYPE_CHECKING:
     from .mission import Mission
+    from .mission_event_choice import MissionEventChoice
 
 from .enums import MissionEventType
 

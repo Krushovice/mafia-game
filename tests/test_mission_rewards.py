@@ -15,7 +15,6 @@ from crud.other_crud import (
 from services.mission_service import MissionService
 from services.user_service import UserService
 
-
 # ============================================================
 # Reward calculation tests
 # ============================================================

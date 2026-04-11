@@ -3,14 +3,18 @@
 import pytest
 
 from core.database.models.enums import CharacterRole
-from crud.other_crud import character_crud, mission_crud, user_mission_crud, user_resource_crud
+from crud.other_crud import (
+    character_crud,
+    mission_crud,
+    user_resource_crud,
+)
 from services.mission_service import MissionService
 from services.user_service import UserService
-
 
 # ============================================================
 # Starter package tests
 # ============================================================
+
 
 @pytest.mark.asyncio
 async def test_get_or_create_gives_starter_resources(db_session):
@@ -67,6 +71,7 @@ async def test_existing_user_doesnt_get_double_starter(db_session):
 # Wanted level blocking tests
 # ============================================================
 
+
 @pytest.mark.asyncio
 async def test_mission_blocked_when_wanted_above_80(db_session):
     """При wanted > 80 нельзя начать миссию."""
@@ -78,28 +83,34 @@ async def test_mission_blocked_when_wanted_above_80(db_session):
     resources.wanted_level = 85
     await db_session.commit()
 
-    char = await character_crud.create(db_session, {
-        "user_id": user.id,
-        "name": "Criminal",
-        "power": 20,
-        "intellect": 5,
-        "agility": 5,
-        "loyalty": 0,
-        "is_busy": False,
-    })
+    char = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "Criminal",
+            "power": 20,
+            "intellect": 5,
+            "agility": 5,
+            "loyalty": 0,
+            "is_busy": False,
+        },
+    )
 
-    mission = await mission_crud.create(db_session, {
-        "name": "Easy Job",
-        "description": "Simple",
-        "duration": 2,
-        "reward_money": 0,
-        "reward_influence": 0,
-        "difficulty": "easy",
-        "slots": 1,
-        "power_required": 5,
-        "intellect_required": 0,
-        "agility_required": 0,
-    })
+    mission = await mission_crud.create(
+        db_session,
+        {
+            "name": "Easy Job",
+            "description": "Simple",
+            "duration": 2,
+            "reward_money": 0,
+            "reward_influence": 0,
+            "difficulty": "easy",
+            "slots": 1,
+            "power_required": 5,
+            "intellect_required": 0,
+            "agility_required": 0,
+        },
+    )
 
     mission_svc = MissionService(db_session)
     res = await mission_svc.start_mission(user.id, mission.id, [char])
@@ -118,28 +129,34 @@ async def test_mission_allowed_when_wanted_below_80(db_session):
     resources.wanted_level = 75
     await db_session.commit()
 
-    char = await character_crud.create(db_session, {
-        "user_id": user.id,
-        "name": "Clean",
-        "power": 20,
-        "intellect": 5,
-        "agility": 5,
-        "loyalty": 0,
-        "is_busy": False,
-    })
+    char = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "Clean",
+            "power": 20,
+            "intellect": 5,
+            "agility": 5,
+            "loyalty": 0,
+            "is_busy": False,
+        },
+    )
 
-    mission = await mission_crud.create(db_session, {
-        "name": "Safe Job",
-        "description": "Safe",
-        "duration": 2,
-        "reward_money": 0,
-        "reward_influence": 0,
-        "difficulty": "easy",
-        "slots": 1,
-        "power_required": 5,
-        "intellect_required": 0,
-        "agility_required": 0,
-    })
+    mission = await mission_crud.create(
+        db_session,
+        {
+            "name": "Safe Job",
+            "description": "Safe",
+            "duration": 2,
+            "reward_money": 0,
+            "reward_influence": 0,
+            "difficulty": "easy",
+            "slots": 1,
+            "power_required": 5,
+            "intellect_required": 0,
+            "agility_required": 0,
+        },
+    )
 
     mission_svc = MissionService(db_session)
     res = await mission_svc.start_mission(user.id, mission.id, [char])
@@ -156,28 +173,34 @@ async def test_mission_blocked_at_exactly_81(db_session):
     resources.wanted_level = 81
     await db_session.commit()
 
-    char = await character_crud.create(db_session, {
-        "user_id": user.id,
-        "name": "Hot",
-        "power": 20,
-        "intellect": 5,
-        "agility": 5,
-        "loyalty": 0,
-        "is_busy": False,
-    })
+    char = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "Hot",
+            "power": 20,
+            "intellect": 5,
+            "agility": 5,
+            "loyalty": 0,
+            "is_busy": False,
+        },
+    )
 
-    mission = await mission_crud.create(db_session, {
-        "name": "Blocked",
-        "description": "x",
-        "duration": 2,
-        "reward_money": 0,
-        "reward_influence": 0,
-        "difficulty": "easy",
-        "slots": 1,
-        "power_required": 5,
-        "intellect_required": 0,
-        "agility_required": 0,
-    })
+    mission = await mission_crud.create(
+        db_session,
+        {
+            "name": "Blocked",
+            "description": "x",
+            "duration": 2,
+            "reward_money": 0,
+            "reward_influence": 0,
+            "difficulty": "easy",
+            "slots": 1,
+            "power_required": 5,
+            "intellect_required": 0,
+            "agility_required": 0,
+        },
+    )
 
     mission_svc = MissionService(db_session)
     res = await mission_svc.start_mission(user.id, mission.id, [char])

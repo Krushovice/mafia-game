@@ -7,8 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from .user_mission import UserMission
     from .event import MissionEvent
+    from .user_mission import UserMission
 
 from .enums import MissionDifficulty, MissionStatType
 

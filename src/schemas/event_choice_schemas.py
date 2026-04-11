@@ -22,11 +22,13 @@ class MissionEventChoiceRead(BaseModel):
 
 class EventChoiceResponse(BaseModel):
     """Ответ игрока на событие."""
+
     choice_type: EventChoiceType
 
 
 class ActiveEventRead(BaseModel):
     """Текущее активное событие миссии."""
+
     event_log_id: int
     event_type: str
     event_description: str

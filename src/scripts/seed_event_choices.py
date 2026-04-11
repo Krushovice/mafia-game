@@ -14,18 +14,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.config import settings
 from core.database.db_helper import db_helper
 from core.database.models.enums import EventChoiceType, MissionEventType
-from crud.other_crud import mission_crud, mission_event_crud, mission_event_choice_crud
+from crud.other_crud import mission_crud, mission_event_choice_crud, mission_event_crud
 
 
 async def seed_event_choices():
     """Create default event choices for police_raid, competitor_attack, random_luck."""
     async with AsyncSession(bind=db_helper.engine) as session:
         # Get existing events
-        from core.database.models import MissionEvent
         from sqlalchemy import select
+
+        from core.database.models import MissionEvent
 
         result = await session.execute(select(MissionEvent))
         events = result.scalars().all()

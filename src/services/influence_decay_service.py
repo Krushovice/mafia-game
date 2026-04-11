@@ -1,12 +1,12 @@
 """Influence decay and return mission service."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import User, UserMission, UserResource
-from core.database.models.enums import MissionDifficulty, MissionStatus
+from core.database.models import User, UserMission
+from core.database.models.enums import MissionStatus
 from crud.other_crud import user_mission_crud, user_resource_crud
 
 
@@ -152,7 +152,9 @@ class InfluenceDecayService:
 
             resources = await user_resource_crud.get_by_user(self.session, user_id)
             if resources:
-                resources.influence = max(0, resources.influence - (5 if is_newbie else 7))
+                resources.influence = max(
+                    0, resources.influence - (5 if is_newbie else 7)
+                )
 
         return {
             "success": success,

@@ -2,7 +2,8 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum as PgEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as PgEnum
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -29,10 +30,14 @@ class MissionEventChoice(Base):
 
     # Параметры для расчёта успеха
     money_cost: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    influence_required: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    influence_required: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0"
+    )
     power_required: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     # Базовый шанс успеха выбора (0-100)
-    success_chance_base: Mapped[int] = mapped_column(Integer, default=50, server_default="50")
+    success_chance_base: Mapped[int] = mapped_column(
+        Integer, default=50, server_default="50"
+    )
 
     event: Mapped["MissionEvent"] = relationship(back_populates="choices")

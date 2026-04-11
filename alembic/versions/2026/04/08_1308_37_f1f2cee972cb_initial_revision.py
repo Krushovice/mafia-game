@@ -25,21 +25,15 @@ def upgrade() -> None:
     op.create_table(
         "missions",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "name", sa.String(length=128), server_default="", nullable=False
-        ),
+        sa.Column("name", sa.String(length=128), server_default="", nullable=False),
         sa.Column(
             "description",
             sa.String(length=128),
             server_default="",
             nullable=False,
         ),
-        sa.Column(
-            "duration", sa.Integer(), server_default="0", nullable=False
-        ),
-        sa.Column(
-            "reward_money", sa.Integer(), server_default="0", nullable=False
-        ),
+        sa.Column("duration", sa.Integer(), server_default="0", nullable=False),
+        sa.Column("reward_money", sa.Integer(), server_default="0", nullable=False),
         sa.Column(
             "reward_influence",
             sa.Integer(),
@@ -53,9 +47,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("slots", sa.Integer(), server_default="1", nullable=False),
-        sa.Column(
-            "power_required", sa.Integer(), server_default="0", nullable=False
-        ),
+        sa.Column("power_required", sa.Integer(), server_default="0", nullable=False),
         sa.Column(
             "intellect_required",
             sa.Integer(),
@@ -68,9 +60,7 @@ def upgrade() -> None:
             server_default="0",
             nullable=False,
         ),
-        sa.Column(
-            "created_at", sa.DateTime(), server_default="NOW()", nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime(), server_default="NOW()", nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -86,9 +76,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_users_telegram_id"), "users", ["telegram_id"], unique=True
-    )
+    op.create_index(op.f("ix_users_telegram_id"), "users", ["telegram_id"], unique=True)
     op.create_table(
         "characters",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -153,9 +141,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("chance", sa.Integer(), server_default="10", nullable=False),
-        sa.Column(
-            "description", sa.String(), server_default="", nullable=False
-        ),
+        sa.Column("description", sa.String(), server_default="", nullable=False),
         sa.ForeignKeyConstraint(
             ["mission_id"],
             ["missions.id"],

@@ -21,8 +21,8 @@ from .event import MissionEvent
 from .mission import Mission
 from .mission_character import MissionCharacter
 from .mission_event_choice import MissionEventChoice
-from .tool import Tool
 from .territory import Territory
+from .tool import Tool
 from .user import User
 from .user_mission import UserMission
 from .user_mission_event_log import UserMissionEventLog

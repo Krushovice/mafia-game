@@ -44,9 +44,7 @@ def validate_init_data(init_data: str, bot_token: str) -> dict:
         )
 
     # Build data_check_string: sorted key=value pairs joined by \n, excluding "hash"
-    data_check_arr = sorted(
-        [(k, v[0]) for k, v in parsed.items() if k != "hash"]
-    )
+    data_check_arr = sorted([(k, v[0]) for k, v in parsed.items() if k != "hash"])
     data_check_string = "\n".join(f"{k}={v}" for k, v in data_check_arr)
 
     # HMAC-SHA256: secret_key = SHA256(bot_token)
@@ -56,7 +54,11 @@ def validate_init_data(init_data: str, bot_token: str) -> dict:
     ).hexdigest()
 
     if not hmac.compare_digest(computed_hash, received_hash):
-        logger.warning("Invalid initData hash: received=%s, computed=%s", received_hash, computed_hash)
+        logger.warning(
+            "Invalid initData hash: received=%s, computed=%s",
+            received_hash,
+            computed_hash,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid initData signature",

@@ -9,11 +9,17 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def create_user(telegram_id: int, username: str | None = None, session: AsyncSession = Depends(get_db)):
+async def create_user(
+    telegram_id: int,
+    username: str | None = None,
+    session: AsyncSession = Depends(get_db),
+):
     service = UserService(session)
     user = await service.create_user({"telegram_id": telegram_id, "username": username})
     # ensure resources
-    await service.ensure_resources(user.id, {"money": 1000, "influence": 10, "wanted_level": 0})
+    await service.ensure_resources(
+        user.id, {"money": 1000, "influence": 10, "wanted_level": 0}
+    )
     return user
 
 

@@ -9,7 +9,9 @@ from schemas.weapon_tool_schemas import ToolCreate, WeaponCreate
 router = APIRouter(prefix="/equipment", tags=["Equipment"])
 
 
-@router.post("/weapons/", response_model=WeaponRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/weapons/", response_model=WeaponRead, status_code=status.HTTP_201_CREATED
+)
 async def create_weapon(data: WeaponCreate, session: AsyncSession = Depends(get_db)):
     payload = data.model_dump()
     w = await weapon_crud.create(session, payload)

@@ -12,7 +12,6 @@ from core.database.db_helper import db_helper
 from core.database.models.enums import TerritoryType
 from crud.other_crud import territory_crud
 
-
 TERRITORIES = [
     {
         "name": "Маленький квартал",

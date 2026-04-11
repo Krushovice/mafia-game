@@ -6,7 +6,6 @@ from core.database.models.enums import TerritoryType
 from crud.other_crud import (
     character_crud,
     territory_crud,
-    user_mission_crud,
     user_resource_crud,
     user_territory_crud,
 )

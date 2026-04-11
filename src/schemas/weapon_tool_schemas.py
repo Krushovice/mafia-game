@@ -6,6 +6,7 @@ class WeaponCreate(BaseModel):
     bonus_power: int
     owner_id: int
 
+
 class ToolCreate(BaseModel):
     name: str
     bonus_intellect: int = 0
