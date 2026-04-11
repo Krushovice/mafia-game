@@ -20,7 +20,8 @@
       "Bash(print)",
       "Bash(pyeof)",
       "Bash(python3 *)",
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Bash(alembic *)"
     ]
   },
   "$version": 3

@@ -50,3 +50,20 @@ class MissionStatType(str, enum.Enum):
     FORCE = "force"  # сила + оружие
     STEALTH = "stealth"  # ловкость + инструменты
     DIPLOMACY = "diplomacy"  # интеллект
+
+
+class MissionType(str, enum.Enum):
+    """Тип миссии."""
+
+    REGULAR = "regular"  # обычная, без таймера
+    FLASH = "flash"  # всплывающая, ограничена по времени
+    TERRITORY = "territory"  # захват территории (3 слота, hard)
+    RETURN = "return"  # возвратная миссия после отсутствия
+
+
+class TerritoryType(str, enum.Enum):
+    """Тип территории."""
+
+    DISTRICT = "district"
+    NEIGHBORHOOD = "neighborhood"
+    BOROUGH = "borough"

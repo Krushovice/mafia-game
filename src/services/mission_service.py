@@ -28,9 +28,9 @@ class MissionService(BaseService):
 
     # Wanted increase зависит от сложности миссии
     WANTED_BY_DIFFICULTY = {
-        "easy": 6,    # ~13 миссий до wanted=80
+        "easy": 6,  # ~13 миссий до wanted=80
         "medium": 8,  # ~10 миссий до wanted=80
-        "hard": 12,   # ~6-7 миссий до wanted=80
+        "hard": 12,  # ~6-7 миссий до wanted=80
     }
 
     def __init__(self, session: AsyncSession):
@@ -729,4 +729,5 @@ class MissionService(BaseService):
             "reward_money": reward_money if success else 0,
             "reward_influence": reward_influence if success else 0,
             "wanted_increase": wanted_increase,
+            "territory_captured": False,
         }

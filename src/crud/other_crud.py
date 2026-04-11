@@ -10,11 +10,13 @@ from core.database.models import (
     MissionCharacter,
     MissionEvent,
     MissionEventChoice,
+    Territory,
     Tool,
     User,
     UserMission,
     UserMissionEventLog,
     UserResource,
+    UserTerritory,
     Weapon,
 )
 
@@ -232,3 +234,96 @@ class CRUDUserMissionEventLog(CRUDBase[UserMissionEventLog]):
 # expose instances
 mission_event_choice_crud = CRUDMissionEventChoice()
 user_mission_event_log_crud = CRUDUserMissionEventLog()
+
+
+# ---------------------------------------------------
+# 🔹 Territory CRUD
+# ---------------------------------------------------
+class CRUDTerritory(CRUDBase[Territory]):
+    def __init__(self):
+        super().__init__(Territory)
+
+    async def list_ordered(self, session: AsyncSession) -> List[Territory]:
+        result = await session.execute(
+            select(Territory).order_by(Territory.display_order)
+        )
+        return result.scalars().all()
+
+    async def get_available_for_user(
+        self, session: AsyncSession, user_id: int, user_influence: int
+    ) -> List[Territory]:
+        """Territories the user can attempt to capture (influence >= required)."""
+        from core.database.models.user_territory import UserTerritory
+
+        # Already captured territory IDs
+        captured = await session.execute(
+            select(UserTerritory.territory_id).where(UserTerritory.user_id == user_id)
+        )
+        captured_ids = {row[0] for row in captured.fetchall()}
+
+        all_territories = await self.list_ordered(session)
+        return [
+            t
+            for t in all_territories
+            if t.id not in captured_ids and user_influence >= t.influence_required
+        ]
+
+    async def get_capture_candidates(
+        self, session: AsyncSession, user_id: int, user_influence: int
+    ) -> List[Territory]:
+        """All territories showing capture lock/unlock status."""
+        from core.database.models.user_territory import UserTerritory
+
+        captured = await session.execute(
+            select(UserTerritory.territory_id).where(UserTerritory.user_id == user_id)
+        )
+        captured_ids = {row[0] for row in captured.fetchall()}
+
+        all_territories = await self.list_ordered(session)
+        return [t for t in all_territories if t.id not in captured_ids]
+
+
+# ---------------------------------------------------
+# 🔹 UserTerritory CRUD
+# ---------------------------------------------------
+class CRUDUserTerritory(CRUDBase[UserTerritory]):
+    def __init__(self):
+        super().__init__(UserTerritory)
+
+    async def list_by_user(
+        self, session: AsyncSession, user_id: int
+    ) -> List[UserTerritory]:
+        result = await session.execute(
+            select(UserTerritory)
+            .options(selectinload(UserTerritory.territory))
+            .where(UserTerritory.user_id == user_id)
+            .order_by(UserTerritory.captured_at)
+        )
+        return result.scalars().all()
+
+    async def get_total_passive_income(
+        self, session: AsyncSession, user_id: int
+    ) -> dict:
+        """Calculate total passive income from all captured territories."""
+        user_territories = await self.list_by_user(session, user_id)
+        total_money = sum(ut.territory.passive_income_money for ut in user_territories)
+        total_influence = sum(
+            ut.territory.passive_income_influence for ut in user_territories
+        )
+        return {"money": total_money, "influence": total_influence}
+
+    async def is_captured(
+        self, session: AsyncSession, user_id: int, territory_id: int
+    ) -> bool:
+        result = await session.execute(
+            select(UserTerritory).where(
+                UserTerritory.user_id == user_id,
+                UserTerritory.territory_id == territory_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+
+# expose instances
+territory_crud = CRUDTerritory()
+user_territory_crud = CRUDUserTerritory()

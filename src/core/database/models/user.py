@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from .character import Character
     from .user_mission import UserMission
     from .user_resource import UserResource
+    from .user_territory import UserTerritory
+
 
 class User(Base):
     __tablename__ = "users"
@@ -25,6 +27,9 @@ class User(Base):
     )
 
     # relationships
-    resources: Mapped["UserResource"] = relationship(back_populates="user", uselist=False)
+    resources: Mapped["UserResource"] = relationship(
+        back_populates="user", uselist=False
+    )
     characters: Mapped[list["Character"]] = relationship(back_populates="user")
     missions: Mapped[list["UserMission"]] = relationship(back_populates="user")
+    territories: Mapped[list["UserTerritory"]] = relationship(back_populates="user")
