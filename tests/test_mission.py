@@ -49,13 +49,18 @@ async def test_start_and_complete_mission(db_session):
     )
 
     svc = MissionService(db_session)
-    res = await svc.start_mission(user.id, mission.id, [char])
+    await svc.refill_missions(user.id)
+    missions = await user_mission_crud.list(db_session)
+    user_mission = [
+        m for m in missions if m.user_id == user.id and m.status.value == "pending"
+    ][0]
+    res = await svc.start_mission_execution(user.id, user_mission.id, [char])
     assert res["success"] is True
 
     # fetch user_mission and set ends_at in past
     ums = await user_mission_crud.list(db_session)
-    assert len(ums) == 1
-    um = ums[0]
+    assert len(ums) >= 1
+    um = [m for m in ums if m.status.value == "in_progress" and m.available_until is None][0]
     um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 

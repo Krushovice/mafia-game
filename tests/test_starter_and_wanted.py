@@ -4,6 +4,7 @@ import pytest
 
 from core.database.models.enums import CharacterRole
 from crud.other_crud import (
+    user_mission_crud,
     character_crud,
     mission_crud,
     user_resource_crud,
@@ -113,7 +114,10 @@ async def test_mission_blocked_when_wanted_above_80(db_session):
     )
 
     mission_svc = MissionService(db_session)
-    res = await mission_svc.start_mission(user.id, mission.id, [char])
+    await mission_svc.refill_missions(user.id)
+    missions = await user_mission_crud.list(db_session)
+    user_mission = [m for m in missions if m.user_id == user.id and m.status.value == 'pending'][0]
+    res = await mission_svc.start_mission_execution(user.id, user_mission.id, [char])
     assert res["success"] is False
     assert "розыска" in res["message"].lower() or "розыск" in res["message"].lower()
 
@@ -159,7 +163,10 @@ async def test_mission_allowed_when_wanted_below_80(db_session):
     )
 
     mission_svc = MissionService(db_session)
-    res = await mission_svc.start_mission(user.id, mission.id, [char])
+    await mission_svc.refill_missions(user.id)
+    missions = await user_mission_crud.list(db_session)
+    user_mission = [m for m in missions if m.user_id == user.id and m.status.value == 'pending'][0]
+    res = await mission_svc.start_mission_execution(user.id, user_mission.id, [char])
     assert res["success"] is True
 
 
@@ -203,5 +210,8 @@ async def test_mission_blocked_at_exactly_81(db_session):
     )
 
     mission_svc = MissionService(db_session)
-    res = await mission_svc.start_mission(user.id, mission.id, [char])
+    await mission_svc.refill_missions(user.id)
+    missions = await user_mission_crud.list(db_session)
+    user_mission = [m for m in missions if m.user_id == user.id and m.status.value == 'pending'][0]
+    res = await mission_svc.start_mission_execution(user.id, user_mission.id, [char])
     assert res["success"] is False

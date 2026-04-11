@@ -23,7 +23,11 @@
       "Bash(sed *)",
       "Bash(alembic *)",
       "Bash(uv *)",
-      "Bash(echo *)"
+      "Bash(echo *)",
+      "Bash(cd *)",
+      "Bash(tail *)",
+      "Bash(do *)",
+      "Bash(done)"
     ]
   },
   "$version": 3

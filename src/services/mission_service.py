@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List
@@ -203,10 +204,57 @@ class MissionService(BaseService):
     # СТАРТ МИССИИ
     # -------------------------
 
-    async def start_mission(
+
+    async def refill_missions(self, user_id: int) -> None:
+        """Ensure user has at least 3 available missions on the map."""
+        from sqlalchemy import select, func
+        from core.database.models import Mission, UserMission
+        from crud.other_crud import user_mission_crud, mission_crud
+
+        result = await self.session.execute(
+            select(func.count(UserMission.id)).where(
+                UserMission.user_id == user_id,
+                UserMission.status == MissionStatus.PENDING,
+            )
+        )
+        count = result.scalar() or 0
+
+        if count >= 3:
+            return
+
+        templates = await mission_crud.list(self.session)
+        if not templates:
+            return
+
+        needed = 3 - count
+        for _ in range(needed):
+            template = random.choice(templates)
+            is_flash = random.random() < 0.1
+            available_until = None
+            location_name = f"Район {random.choice(['Альфа', 'Бета', 'Гамма', 'Дельта'])}"
+            
+            if is_flash:
+                available_until = datetime.now(timezone.utc) + timedelta(minutes=random.randint(30, 60))
+                location_name = f"⚡ {location_name}"
+
+            await user_mission_crud.create(
+                self.session,
+                {
+                    "user_id": user_id,
+                    "mission_id": template.id,
+                    "status": MissionStatus.PENDING,
+                    "available_until": available_until,
+                    "location_name": location_name,
+                    "position_x": random.randint(10, 90),
+                    "position_y": random.randint(10, 90),
+                    "success_chance": 100,
+                },
+            )
+
+    async def start_mission_execution(
         self,
         user_id: int,
-        mission_id: int,
+        user_mission_id: int,
         characters: List[Character],
     ):
         # Проверка уровня розыска — при wanted > 80 миссии заблокированы
@@ -219,9 +267,35 @@ class MissionService(BaseService):
                 "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения.",
             }
 
-        mission = await self.get(mission_id)
-        if not mission:
+        from crud.other_crud import user_mission_crud
+        
+        # Проверка wanted
+        from crud.other_crud import user_resource_crud
+        resources = await user_resource_crud.get_by_user(self.session, user_id)
+        if resources and resources.wanted_level > 80:
+            return {"success": False, "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения."}
+
+        user_mission = await user_mission_crud.get(self.session, user_mission_id)
+        if not user_mission:
             return {"success": False, "message": "Миссия не найдена"}
+        
+        if user_mission.user_id != user_id:
+            return {"success": False, "message": "Это не ваша миссия"}
+
+        if user_mission.status != MissionStatus.PENDING:
+            return {"success": False, "message": "Миссия уже запущена или завершена"}
+
+        # Flash timer check
+        if user_mission.available_until:
+            expire_time = user_mission.available_until
+            if expire_time.tzinfo is None:
+                expire_time = expire_time.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > expire_time:
+                return {"success": False, "message": "Время миссии истекло"}
+                
+        mission = await self.get(user_mission.mission_id)
+        if not mission:
+            return {"success": False, "message": "Шаблон миссии не найден"}
 
         possible, msg = await self.is_mission_possible(mission, characters)
         if not possible:
@@ -229,6 +303,11 @@ class MissionService(BaseService):
 
         # Рассчитываем награды заранее
         rewards = self.calculate_mission_rewards(mission, characters)
+
+        # Flash multiplier
+        if user_mission.available_until:
+            rewards["reward_money"] *= 2
+            rewards["wanted_increase"] = max(1, int(rewards["wanted_increase"] * 1.5))
 
         # Выполняем изменения в рамках транзакции (start only if no active transaction)
         if self.session.in_transaction():
@@ -241,7 +320,7 @@ class MissionService(BaseService):
                 self.session,
                 {
                     "user_id": user_id,
-                    "mission_id": mission_id,
+                    "mission_id": user_mission.id,
                     "status": MissionStatus.IN_PROGRESS,
                     "started_at": datetime.now(timezone.utc),
                     "ends_at": datetime.now(timezone.utc)
@@ -278,7 +357,7 @@ class MissionService(BaseService):
                     self.session,
                     {
                         "user_id": user_id,
-                        "mission_id": mission_id,
+                        "mission_id": user_mission.id,
                         "status": MissionStatus.IN_PROGRESS,
                         "started_at": datetime.now(timezone.utc),
                         "ends_at": datetime.now(timezone.utc)

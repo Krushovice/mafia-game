@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    String,
     func,
     text,
 )
@@ -40,8 +41,17 @@ class UserMission(Base):
         server_default=text(f"'{MissionStatus.PENDING.value}'"),
     )
 
-    started_at: Mapped[datetime] = mapped_column(DateTime)
-    ends_at: Mapped[datetime] = mapped_column(DateTime)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+    # Для Flash-миссий (исчезает после этого времени)
+    available_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Локация на карте
+    location_name: Mapped[str] = mapped_column(String(64), default='', server_default='')
+    position_x: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
+    position_y: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
 
     success_chance: Mapped[int] = mapped_column(Integer)
 
