@@ -19,17 +19,20 @@ async def create_weapon(
     session: AsyncSession = Depends(get_db),
 ):
     payload = data.model_dump()
-    w = await weapon_crud.create(session, payload)
-    return w
+    weapon = await weapon_crud.create(session, payload)
+    return weapon
 
 
-@router.get("/weapons/owner/{owner_id}", response_model=list[WeaponRead])
+@router.get(
+    "/weapons/owner/{owner_id}",
+    response_model=list[WeaponRead],
+)
 async def list_weapons_by_owner(
     owner_id: int,
     session: AsyncSession = Depends(get_db),
 ):
-    ws = await weapon_crud.list_by_owner(session, owner_id)
-    return ws
+    weapons = await weapon_crud.list_by_owner(session, owner_id)
+    return weapons
 
 
 @router.delete("/weapons/{weapon_id}")
@@ -37,9 +40,12 @@ async def delete_weapon(
     weapon_id: int,
     session: AsyncSession = Depends(get_db),
 ):
-    ok = await weapon_crud.delete(session, weapon_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Weapon not found")
+    deleted = await weapon_crud.delete(session, weapon_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Weapon not found",
+        )
     return {"success": True}
 
 
@@ -53,17 +59,20 @@ async def create_tool(
     session: AsyncSession = Depends(get_db),
 ):
     payload = data.model_dump()
-    t = await tool_crud.create(session, payload)
-    return t
+    tool = await tool_crud.create(session, payload)
+    return tool
 
 
-@router.get("/tools/owner/{owner_id}", response_model=list[ToolRead])
+@router.get(
+    "/tools/owner/{owner_id}",
+    response_model=list[ToolRead],
+)
 async def list_tools_by_owner(
     owner_id: int,
     session: AsyncSession = Depends(get_db),
 ):
-    ts = await tool_crud.list_by_owner(session, owner_id)
-    return ts
+    tools = await tool_crud.list_by_owner(session, owner_id)
+    return tools
 
 
 @router.delete("/tools/{tool_id}")
@@ -71,7 +80,10 @@ async def delete_tool(
     tool_id: int,
     session: AsyncSession = Depends(get_db),
 ):
-    ok = await tool_crud.delete(session, tool_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Tool not found")
+    deleted = await tool_crud.delete(session, tool_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Tool not found",
+        )
     return {"success": True}

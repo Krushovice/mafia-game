@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user, get_db
-from crud.other_crud import mission_event_crud
+from crud.other_crud import (
+    character_crud,
+    mission_crud,
+    mission_event_crud,
+    user_mission_crud,
+)
 from schemas.mission_event_schemas import (
     MissionEventCreate,
     MissionEventRead,
@@ -30,7 +35,10 @@ async def create_mission(
     return await service.create(data.model_dump())
 
 
-@router.get("/{mission_id}", response_model=MissionRead)
+@router.get(
+    "/{mission_id}",
+    response_model=MissionRead,
+)
 async def get_mission(
     mission_id: int,
     session: AsyncSession = Depends(get_db),
@@ -39,7 +47,10 @@ async def get_mission(
     mission = await service.get(mission_id)
 
     if not mission:
-        raise HTTPException(status_code=404, detail="Mission not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Mission not found",
+        )
 
     return mission
 
@@ -54,54 +65,63 @@ async def create_event(
     data: MissionEventCreate,
     session: AsyncSession = Depends(get_db),
 ):
-    # create event linked to mission
     payload = data.model_dump()
     payload["mission_id"] = mission_id
-    ev = await mission_event_crud.create(session, payload)
-    return ev
+    event = await mission_event_crud.create(session, payload)
+    return event
 
 
-@router.get("/{mission_id}/events", response_model=list[MissionEventRead])
+@router.get(
+    "/{mission_id}/events",
+    response_model=list[MissionEventRead],
+)
 async def list_events(
     mission_id: int,
     session: AsyncSession = Depends(get_db),
 ):
-    evs = await mission_event_crud.list_by_mission(session, mission_id)
-    return evs
+    events = await mission_event_crud.list_by_mission(session, mission_id)
+    return events
 
 
-@router.post("/{mission_id}/start", response_model=UserMissionRead)
+@router.post(
+    "/{mission_id}/start",
+    response_model=UserMissionRead,
+)
 async def start_mission(
     mission_id: int,
     body: UserMissionStart,
     session: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    svc = MissionService(session)
-    # load characters for validation
-    from crud.other_crud import character_crud
+    service = MissionService(session)
 
-    chars = []
-    for cid in body.character_ids:
-        c = await character_crud.get(session, cid)
-        if not c:
-            raise HTTPException(status_code=404, detail=f"Character {cid} not found")
-        chars.append(c)
+    characters = []
+    for character_id in body.character_ids:
+        character = await character_crud.get(session, character_id)
+        if not character:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Character {character_id} not found",
+            )
+        characters.append(character)
 
-    res = await svc.start_mission(current_user.id, mission_id, chars)
-    if not res.get("success"):
-        raise HTTPException(status_code=400, detail=res.get("message"))
+    result = await service.start_mission(current_user.id, mission_id, characters)
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message"),
+        )
 
-    # return created user mission
-    from crud.other_crud import user_mission_crud
-
-    um = await user_mission_crud.get(session, res["mission_id"])
-    return um
+    user_mission = await user_mission_crud.get(session, result["mission_id"])
+    return user_mission
 
 
-@router.get("/", response_model=list[MissionRead])
-async def list_missions(session: AsyncSession = Depends(get_db)):
-    from crud.other_crud import mission_crud
-
+@router.get(
+    "/",
+    response_model=list[MissionRead],
+)
+async def list_missions(
+    session: AsyncSession = Depends(get_db),
+):
     missions = await mission_crud.list_with_events(session)
     return missions

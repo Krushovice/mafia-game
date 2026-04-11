@@ -24,7 +24,10 @@ async def create_character(
     return await service.create(payload)
 
 
-@router.get("/{character_id}", response_model=CharacterRead)
+@router.get(
+    "/{character_id}",
+    response_model=CharacterRead,
+)
 async def get_character(
     character_id: int,
     session: AsyncSession = Depends(get_db),
@@ -33,12 +36,18 @@ async def get_character(
     character = await service.get_character(character_id)
 
     if not character:
-        raise HTTPException(status_code=404, detail="Character not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Character not found",
+        )
 
     return character
 
 
-@router.patch("/{character_id}", response_model=CharacterRead)
+@router.patch(
+    "/{character_id}",
+    response_model=CharacterRead,
+)
 async def update_character(
     character_id: int,
     data: dict,
@@ -48,22 +57,35 @@ async def update_character(
     service = CharacterService(session)
     existing = await service.get(character_id)
     if not existing:
-        raise HTTPException(status_code=404, detail="Character not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Character not found",
+        )
     if existing.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not allowed")
+        raise HTTPException(
+            status_code=403,
+            detail="Not allowed",
+        )
     updated = await service.update(character_id, data)
     if not updated:
-        raise HTTPException(status_code=404, detail="Character not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Character not found",
+        )
     return updated
 
 
-@router.get("/", response_model=list[CharacterRead])
+@router.get(
+    "/",
+    response_model=list[CharacterRead],
+)
 async def list_characters(
     session: AsyncSession = Depends(get_db),
     current_user=Depends(lambda db=Depends(get_db): get_current_user(db=db)),
 ):
-    # list current user's characters with equipment
     from crud.other_crud import character_crud
 
-    chars = await character_crud.list_by_user_with_equipment(session, current_user.id)
-    return chars
+    characters = await character_crud.list_by_user_with_equipment(
+        session, current_user.id
+    )
+    return characters

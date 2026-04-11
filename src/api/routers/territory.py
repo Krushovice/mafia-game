@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user, get_db
-from crud.other_crud import user_resource_crud
+from crud.other_crud import (
+    user_resource_crud,
+    user_territory_crud,
+)
 from services.influence_decay_service import InfluenceDecayService
 from services.territory_service import TerritoryService
 
@@ -18,8 +21,8 @@ async def list_territories(
     resources = await user_resource_crud.get_by_user(session, current_user.id)
     influence = resources.influence if resources else 0
 
-    svc = TerritoryService(session)
-    return await svc.list_for_user(current_user.id, influence)
+    service = TerritoryService(session)
+    return await service.list_for_user(current_user.id, influence)
 
 
 @router.get("/income")
@@ -28,8 +31,6 @@ async def get_passive_income(
     current_user=Depends(get_current_user),
 ):
     """Текущий пассивный доход от территорий."""
-    from crud.other_crud import user_territory_crud
-
     return await user_territory_crud.get_total_passive_income(session, current_user.id)
 
 
@@ -41,10 +42,13 @@ async def start_capture(
     current_user=Depends(get_current_user),
 ):
     """Начать миссию захвата территории."""
-    svc = TerritoryService(session)
-    result = await svc.start_capture(current_user.id, territory_id, character_ids)
+    service = TerritoryService(session)
+    result = await service.start_capture(current_user.id, territory_id, character_ids)
     if not result.get("success"):
-        raise HTTPException(status_code=400, detail=result.get("message"))
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message"),
+        )
     return result
 
 
@@ -56,15 +60,23 @@ async def get_return_mission(
     """Получить возвратную миссию после долгого отсутствия."""
     from services.user_service import UserService
 
-    svc = InfluenceDecayService(session)
+    decay_service = InfluenceDecayService(session)
     user = await UserService(session).get(current_user.id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
 
-    is_newbie = svc.is_newbie(user)
-    mission = await svc.get_or_create_return_mission(current_user.id, is_newbie)
+    is_newbie = decay_service.is_newbie(user)
+    mission = await decay_service.get_or_create_return_mission(
+        current_user.id, is_newbie
+    )
     if not mission:
-        raise HTTPException(status_code=404, detail="No return mission available")
+        raise HTTPException(
+            status_code=404,
+            detail="No return mission available",
+        )
     return mission
 
 
@@ -76,10 +88,15 @@ async def complete_return_mission(
     current_user=Depends(get_current_user),
 ):
     """Завершить возвратную миссию."""
-    svc = InfluenceDecayService(session)
-    result = await svc.complete_return_mission(mission_id, current_user.id, success)
+    decay_service = InfluenceDecayService(session)
+    result = await decay_service.complete_return_mission(
+        mission_id, current_user.id, success
+    )
     if not result.get("success") and "message" in result:
-        raise HTTPException(status_code=400, detail=result.get("message"))
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message"),
+        )
     return result
 
 
@@ -91,9 +108,12 @@ async def check_decay(
     """Проверить decay влияния при входе."""
     from services.user_service import UserService
 
-    svc = InfluenceDecayService(session)
+    decay_service = InfluenceDecayService(session)
     user = await UserService(session).get(current_user.id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
 
-    return await svc.apply_decay(current_user.id)
+    return await decay_service.apply_decay(current_user.id)
