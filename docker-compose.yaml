@@ -33,7 +33,7 @@ services:
       - APP_CONFIG__TMA__BOT_TOKEN=${BOT_TELEGRAM_TOKEN}
       - APP_CONFIG__TMA__URL=${TMA_URL:-http://localhost:3000}
     ports:
-      - "8000:8000"
+      - "8080:8000"
     depends_on:
       - pg
 

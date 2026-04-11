@@ -72,7 +72,8 @@ app.include_router(dashboard_router.router)
 
 # Serve Frontend Static Files
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FRONTEND_DIST_DIR = os.path.join(BASE_DIR, "frontend", "dist")
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+FRONTEND_DIST_DIR = os.path.join(PROJECT_ROOT, "frontend", "dist")
 
 if os.path.exists(FRONTEND_DIST_DIR):
     # Mount assets (css, js, images)

@@ -43,34 +43,21 @@ async def start_bot(token: str):
             user = message.from_user
             await register_user_if_missing(client, user.id, user.username)
 
-            # WebApp button requires HTTPS URL
-            tma_url = settings.tma_url
-            if tma_url.startswith("https://"):
-                keyboard = InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [
-                            InlineKeyboardButton(
-                                text="🎮 Играть",
-                                web_app=WebAppInfo(url=tma_url),
-                            )
-                        ]
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text="🎮 Играть",
+                            web_app=WebAppInfo(url=settings.tma_url),
+                        )
                     ]
-                )
-                await message.answer(
-                    "Добро пожаловать в Мафию! Нажмите кнопку ниже, чтобы играть.",
-                    reply_markup=keyboard,
-                )
-            else:
-                await message.answer(
-                    "Добро пожаловать в Мафию! 🎮\n\n"
-                    "Игра доступна по командам:\n"
-                    "/me — ваш профиль\n"
-                    "/missions — список миссий\n"
-                    "/my_missions — ваши активные миссии\n"
-                    "/start_mission — запустить миссию\n"
-                    "/complete_mission — завершить миссию\n\n"
-                    "Для игры через Mini App нужен HTTPS URL."
-                )
+                ]
+            )
+            await message.answer(
+                "👋 Добро пожаловать в Мафию!\n\n"
+                "Стань боссом мафии, захватывай территории и строй империю.",
+                reply_markup=keyboard,
+            )
 
         @dp.message(Command(commands=["me"]))
         async def cmd_me(message: types.Message):
