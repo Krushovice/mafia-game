@@ -34,16 +34,16 @@ class Character(Base):
     role: Mapped[CharacterRole] = mapped_column(
         Enum(
             CharacterRole,
-            native_enum=False,
-            length=32,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
         ),
         default=CharacterRole.THUG,
     )
     trait: Mapped[CharacterTrait] = mapped_column(
         Enum(
             CharacterTrait,
-            native_enum=False,
-            length=32,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
         ),
         default=CharacterTrait.QUIET,
     )

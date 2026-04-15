@@ -3,12 +3,13 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, Integer, String, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
 if TYPE_CHECKING:
+    from .npc_boss import NPCBoss
     from .user_territory import UserTerritory
 
 from .enums import TerritoryType
@@ -21,7 +22,11 @@ class Territory(Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False, default="")
 
     territory_type: Mapped[TerritoryType] = mapped_column(
-        Enum(TerritoryType, native_enum=False, length=32),
+        Enum(
+            TerritoryType,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=False,
         default=TerritoryType.DISTRICT,
     )
@@ -30,6 +35,9 @@ class Territory(Base):
 
     # Требования для миссии захвата
     influence_required: Mapped[int] = mapped_column(Integer, default=25)
+    influence_cost: Mapped[int] = mapped_column(
+        Integer, default=10
+    )  # Сколько влияния тратится при захвате
     power_required: Mapped[int] = mapped_column(Integer, default=20)
     intellect_required: Mapped[int] = mapped_column(Integer, default=15)
     agility_required: Mapped[int] = mapped_column(Integer, default=15)
@@ -44,6 +52,16 @@ class Territory(Base):
 
     # Порядок отображения
     display_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Позиция на карте (grid)
+    grid_x: Mapped[int] = mapped_column(Integer, default=0)
+    grid_y: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Владелец (NPC босс, null = свободна)
+    boss_id: Mapped[int | None] = mapped_column(
+        ForeignKey("npc_bosses.id"), nullable=True
+    )
+    boss: Mapped["NPCBoss | None"] = relationship(back_populates="territories")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, server_default=func.now()

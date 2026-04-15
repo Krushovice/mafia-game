@@ -9,6 +9,8 @@ class BotSettings(BaseSettings):
     telegram_token: str
     api_url: str = "http://localhost:8000"
     tma_url: str = "http://localhost:3000"
+    # Webhook URL (e.g. https://your-domain.ru/webhook)
+    webhook_url: str = ""
     # Optional comma-separated list: BOT_ADMIN_TELEGRAM_IDS="123,456"
     admin_telegram_ids: str = ""
 

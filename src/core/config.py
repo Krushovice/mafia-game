@@ -35,6 +35,8 @@ class FastAPIConfig(BaseModel):
     cors_origins: list[str] = [
         "https://web.telegram.org",
         "https://*.web.telegram.org",
+        "http://localhost:3000",
+        "http://localhost:8080",
     ]
 
 

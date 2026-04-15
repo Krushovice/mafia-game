@@ -15,53 +15,42 @@ from .config import settings
 
 logger = logging.getLogger(__name__)
 
-
-async def register_user_if_missing(
-    client: httpx.AsyncClient, tg_id: int, username: Optional[str]
-):
-    url = f"{settings.api_url}/users"
-    payload = {"telegram_id": tg_id, "username": username or ""}
-    try:
-        r = await client.post(url, json=payload, timeout=10.0)
-        if r.status_code in (200, 201):
-            return r.json()
-        else:
-            logger.warning("Failed to register user %s: %s", tg_id, r.text)
-    except Exception:
-        logger.exception("Error while registering user")
-    return None
+# Global instances
+bot = Bot(settings.telegram_token)
+dp = Dispatcher(storage=MemoryStorage())
 
 
-async def start_bot(token: str):
-    bot = Bot(token)
-    dp = Dispatcher(storage=MemoryStorage())
+def _create_handlers_router():
+    """Create router with all command handlers."""
+    from aiogram import Router
 
-    async with httpx.AsyncClient() as client:
+    router = Router()
 
-        @dp.message(Command(commands=["start"]))
-        async def cmd_start(message: types.Message):
-            user = message.from_user
-            await register_user_if_missing(client, user.id, user.username)
+    @router.message(Command(commands=["start"]))
+    async def cmd_start(message: types.Message):
+        user = message.from_user
+        await _register_user_if_missing(user.id, user.username)
 
-            keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="🎮 Играть",
-                            web_app=WebAppInfo(url=settings.tma_url),
-                        )
-                    ]
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🎮 Играть",
+                        web_app=WebAppInfo(url=settings.tma_url),
+                    )
                 ]
-            )
-            await message.answer(
-                "👋 Добро пожаловать в Мафию!\n\n"
-                "Стань боссом мафии, захватывай территории и строй империю.",
-                reply_markup=keyboard,
-            )
+            ]
+        )
+        await message.answer(
+            "👋 Добро пожаловать в Мафию!\n\n"
+            "Стань боссом мафии, захватывай территории и строй империю.",
+            reply_markup=keyboard,
+        )
 
-        @dp.message(Command(commands=["me"]))
-        async def cmd_me(message: types.Message):
-            tg_id = message.from_user.id
+    @router.message(Command(commands=["me"]))
+    async def cmd_me(message: types.Message):
+        tg_id = message.from_user.id
+        async with httpx.AsyncClient() as client:
             try:
                 r = await client.get(f"{settings.api_url}/users/{tg_id}")
                 if r.status_code == 200:
@@ -72,8 +61,9 @@ async def start_bot(token: str):
                 logger.exception("Error fetching user")
                 await message.reply("Ошибка при запросе профиля.")
 
-        @dp.message(Command(commands=["missions"]))
-        async def cmd_missions(message: types.Message):
+    @router.message(Command(commands=["missions"]))
+    async def cmd_missions(message: types.Message):
+        async with httpx.AsyncClient() as client:
             try:
                 r = await client.get(f"{settings.api_url}/missions")
                 if r.status_code == 200:
@@ -93,13 +83,14 @@ async def start_bot(token: str):
                 logger.exception("Error fetching missions")
                 await message.reply("Ошибка при запросе миссий.")
 
-        @dp.message(Command(commands=["my_missions"]))
-        async def cmd_my_missions(message: types.Message):
-            tg_id = message.from_user.id
-            headers = {
-                "X-Telegram-Id": str(tg_id),
-                "X-Username": message.from_user.username or "",
-            }
+    @router.message(Command(commands=["my_missions"]))
+    async def cmd_my_missions(message: types.Message):
+        tg_id = message.from_user.id
+        headers = {
+            "X-Telegram-Id": str(tg_id),
+            "X-Username": message.from_user.username or "",
+        }
+        async with httpx.AsyncClient() as client:
             try:
                 r = await client.get(
                     f"{settings.api_url}/user_missions",
@@ -122,33 +113,34 @@ async def start_bot(token: str):
                 logger.exception("Error fetching user missions")
                 await message.reply("Ошибка при запросе миссий.")
 
-        @dp.message(Command(commands=["start_mission"]))
-        async def cmd_start_mission(message: types.Message):
-            # Usage: /start_mission <mission_id> <char_id1,char_id2,...>
-            parts = (message.text or "").split()
-            if len(parts) < 3:
-                await message.reply(
-                    "Использование: /start_mission <mission_id> <char_id1,char_id2,...>"
-                )
-                return
-            try:
-                mission_id = int(parts[1])
-            except ValueError:
-                await message.reply("mission_id должен быть числом")
-                return
-            rest = " ".join(parts[2:])
-            try:
-                char_ids = [int(x) for x in rest.replace(",", " ").split() if x]
-            except ValueError:
-                await message.reply(
-                    "character ids должны быть числами, разделёнными запятыми или пробелами"
-                )
-                return
-            headers = {
-                "X-Telegram-Id": str(message.from_user.id),
-                "X-Username": message.from_user.username or "",
-            }
-            payload = {"character_ids": char_ids}
+    @router.message(Command(commands=["start_mission"]))
+    async def cmd_start_mission(message: types.Message):
+        # Usage: /start_mission <mission_id> <char_id1,char_id2,...>
+        parts = (message.text or "").split()
+        if len(parts) < 3:
+            await message.reply(
+                "Использование: /start_mission <mission_id> <char_id1,char_id2,...>"
+            )
+            return
+        try:
+            mission_id = int(parts[1])
+        except ValueError:
+            await message.reply("mission_id должен быть числом")
+            return
+        rest = " ".join(parts[2:])
+        try:
+            char_ids = [int(x) for x in rest.replace(",", " ").split() if x]
+        except ValueError:
+            await message.reply(
+                "character ids должны быть числами, разделёнными запятыми или пробелами"
+            )
+            return
+        headers = {
+            "X-Telegram-Id": str(message.from_user.id),
+            "X-Username": message.from_user.username or "",
+        }
+        payload = {"character_ids": char_ids}
+        async with httpx.AsyncClient() as client:
             try:
                 r = await client.post(
                     f"{settings.api_url}/missions/{mission_id}/start",
@@ -165,24 +157,23 @@ async def start_bot(token: str):
                 logger.exception("Error starting mission")
                 await message.reply("Ошибка при запуске миссии.")
 
-        @dp.message(Command(commands=["complete_mission"]))
-        async def cmd_complete_mission(message: types.Message):
-            # Usage: /complete_mission <user_mission_id>
-            parts = (message.text or "").split()
-            if len(parts) < 2:
-                await message.reply(
-                    "Использование: /complete_mission <user_mission_id>"
-                )
-                return
-            try:
-                um_id = int(parts[1])
-            except ValueError:
-                await message.reply("user_mission_id должен быть числом")
-                return
-            headers = {
-                "X-Telegram-Id": str(message.from_user.id),
-                "X-Username": message.from_user.username or "",
-            }
+    @router.message(Command(commands=["complete_mission"]))
+    async def cmd_complete_mission(message: types.Message):
+        # Usage: /complete_mission <user_mission_id>
+        parts = (message.text or "").split()
+        if len(parts) < 2:
+            await message.reply("Использование: /complete_mission <user_mission_id>")
+            return
+        try:
+            um_id = int(parts[1])
+        except ValueError:
+            await message.reply("user_mission_id должен быть числом")
+            return
+        headers = {
+            "X-Telegram-Id": str(message.from_user.id),
+            "X-Username": message.from_user.username or "",
+        }
+        async with httpx.AsyncClient() as client:
             try:
                 r = await client.post(
                     f"{settings.api_url}/user_missions/{um_id}/complete",
@@ -198,4 +189,29 @@ async def start_bot(token: str):
                 logger.exception("Error completing mission")
                 await message.reply("Ошибка при завершении миссии.")
 
-        await dp.start_polling(bot)
+    return router
+
+
+async def _register_user_if_missing(tg_id: int, username: Optional[str]):
+    url = f"{settings.api_url}/users"
+    payload = {"telegram_id": tg_id, "username": username or ""}
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.post(url, json=payload, timeout=10.0)
+            if r.status_code in (200, 201):
+                return r.json()
+            else:
+                logger.warning("Failed to register user %s: %s", tg_id, r.text)
+    except Exception:
+        logger.exception("Error while registering user")
+    return None
+
+
+# Setup handlers on module load (must be after all function definitions)
+def _setup_handlers():
+    """Register all handlers on the global dispatcher."""
+    router = _create_handlers_router()
+    dp.include_router(router)
+
+
+_setup_handlers()

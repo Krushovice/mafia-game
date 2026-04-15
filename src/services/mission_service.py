@@ -289,6 +289,9 @@ class MissionService(BaseService):
                     "position_x": random.randint(10, 90),
                     "position_y": random.randint(10, 90),
                     "success_chance": 100,
+                    "reward_money": template.reward_money,
+                    "reward_influence": template.reward_influence,
+                    "wanted_increase": template.wanted_increase,
                 },
             )
 

@@ -2,7 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Telegram Theme Integration */
+:root {
+  --tg-bg-color: #111827;
+  --tg-text-color: #ffffff;
+  --tg-hint-color: #9ca3af;
+  --tg-link-color: #3b82f6;
+  --tg-button-color: #2563eb;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #1f2937;
+  --tg-header-color: #1f2937;
+  --tg-section-header-text-color: #ffffff;
+  --tg-section-bg-color: #1f2937;
+  --tg-subtitle-text-color: #9ca3af;
+  --tg-destructive-text-color: #ef4444;
+}
+
+/* Safe area insets for iPhone notch */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
 body {
-  @apply bg-gray-900 text-white min-h-screen;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  /* Respect safe area insets */
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }

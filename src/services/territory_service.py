@@ -1,6 +1,6 @@
 """Territory service — захват территорий и пассивный доход."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

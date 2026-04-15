@@ -32,7 +32,9 @@ async def complete_expired_missions():
             expired_missions = result.scalars().all()
 
             if expired_missions:
-                logger.info(f"Found {len(expired_missions)} expired missions to complete.")
+                logger.info(
+                    f"Found {len(expired_missions)} expired missions to complete."
+                )
 
             for user_mission in expired_missions:
                 try:
@@ -44,17 +46,17 @@ async def complete_expired_missions():
                     # or better, just call the logic if it's transaction-safe.
                     # However, MissionService.complete_mission expects to commit.
                     # Since we are in a `with` block (autocommit=False), we need to ensure it works.
-                    
+
                     # Better approach: Create a NEW session for the service logic to isolate commits
-                    # and avoid messing with the current selection loop's state if possible, 
+                    # and avoid messing with the current selection loop's state if possible,
                     # or just handle it carefully.
-                    
+
                     # Actually, simplest is to pass the ID to a helper that handles its own session scope?
                     # No, let's just use the service. But we must ensure the session is ready.
-                    
+
                     svc = MissionService(session)
                     res = await svc.complete_mission(user_mission.id)
-                    
+
                     if res.get("success"):
                         logger.info(
                             f"Auto-completed mission {user_mission.id} for user {user_mission.user_id}"
@@ -63,7 +65,7 @@ async def complete_expired_missions():
                         logger.warning(
                             f"Failed to auto-complete mission {user_mission.id}: {res.get('message')}"
                         )
-                
+
                 except Exception as e:
                     logger.error(f"Error completing mission {user_mission.id}: {e}")
                     await session.rollback()
@@ -80,8 +82,10 @@ async def background_tasks_loop():
     logger.info("Starting background tasks loop.")
     while True:
         try:
-            await complete_expired_missions()
+            # TODO: Fix timezone issues before re-enabling
+            # await complete_expired_missions()
+            pass
         except Exception as e:
             logger.error(f"Error in background tasks loop iteration: {e}")
-        
+
         await asyncio.sleep(CHECK_INTERVAL)

@@ -1,20 +1,21 @@
 import enum
+from enum import StrEnum
 
 
-class CharacterRole(str, enum.Enum):
+class CharacterRole(StrEnum):
     THUG = "thug"
     HACKER = "hacker"
     NEGOTIATOR = "negotiator"
     CAPO = "capo"  # универсальный боец, стартовый персонаж
 
 
-class CharacterTrait(str, enum.Enum):
+class CharacterTrait(StrEnum):
     HOT = "hot"
     QUIET = "quiet"
     GREEDY = "greedy"
 
 
-class MissionStatus(str, enum.Enum):
+class MissionStatus(StrEnum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     WAITING_EVENT = "waiting_event"  # миссия ждёт выбора игрока по событию
@@ -23,7 +24,7 @@ class MissionStatus(str, enum.Enum):
     FAILED = "failed"
 
 
-class EventChoiceType(str, enum.Enum):
+class EventChoiceType(StrEnum):
     """Типы выбора игрока при событии."""
 
     PAYOFF = "payoff"  # откупиться деньгами
@@ -32,19 +33,19 @@ class EventChoiceType(str, enum.Enum):
     DO_NOTHING = "do_nothing"  # бездействие (провал/штраф)
 
 
-class MissionEventType(str, enum.Enum):
+class MissionEventType(StrEnum):
     POLICE_RAID = "police_raid"
     COMPETITOR_ATTACK = "competitor_attack"
     RANDOM_LUCK = "random_luck"
 
 
-class MissionDifficulty(str, enum.Enum):
+class MissionDifficulty(StrEnum):
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
 
 
-class MissionStatType(str, enum.Enum):
+class MissionStatType(StrEnum):
     """Главный стат миссии — от него зависит награда."""
 
     FORCE = "force"  # сила + оружие
@@ -52,7 +53,7 @@ class MissionStatType(str, enum.Enum):
     DIPLOMACY = "diplomacy"  # интеллект
 
 
-class MissionType(str, enum.Enum):
+class MissionType(StrEnum):
     """Тип миссии."""
 
     REGULAR = "regular"  # обычная, без таймера
@@ -61,7 +62,7 @@ class MissionType(str, enum.Enum):
     RETURN = "return"  # возвратная миссия после отсутствия
 
 
-class TerritoryType(str, enum.Enum):
+class TerritoryType(StrEnum):
     """Тип территории."""
 
     DISTRICT = "district"
@@ -69,7 +70,7 @@ class TerritoryType(str, enum.Enum):
     BOROUGH = "borough"
 
 
-class ShopItemType(str, enum.Enum):
+class ShopItemType(StrEnum):
     """Тип товара в магазине."""
 
     CHARACTER = "character"

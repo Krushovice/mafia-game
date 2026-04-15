@@ -38,8 +38,8 @@ class Mission(Base):
     difficulty: Mapped["MissionDifficulty"] = mapped_column(
         Enum(
             MissionDifficulty,
-            native_enum=False,
-            length=32,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
         ),
         nullable=False,
         default=MissionDifficulty.EASY,
@@ -50,8 +50,8 @@ class Mission(Base):
     mission_stat_type: Mapped["MissionStatType"] = mapped_column(
         Enum(
             MissionStatType,
-            native_enum=False,
-            length=32,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
         ),
         nullable=False,
         default=MissionStatType.FORCE,

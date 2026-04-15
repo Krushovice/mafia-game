@@ -14,6 +14,7 @@ __all__ = (
     "Territory",
     "UserTerritory",
     "ShopItem",
+    "NPCBoss",
 )
 
 from .base import Base
@@ -22,6 +23,7 @@ from .event import MissionEvent
 from .mission import Mission
 from .mission_character import MissionCharacter
 from .mission_event_choice import MissionEventChoice
+from .npc_boss import NPCBoss
 from .territory import Territory
 from .tool import Tool
 from .user import User

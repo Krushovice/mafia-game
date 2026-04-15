@@ -10,12 +10,12 @@ from sqlalchemy.orm import selectinload
 
 from api.dependencies import get_current_user, get_db
 from core.database.models import (
-    Mission, 
-    ShopItem, 
-    Territory, 
-    UserMission, 
-    UserResource, 
-    UserTerritory
+    Mission,
+    ShopItem,
+    Territory,
+    UserMission,
+    UserResource,
+    UserTerritory,
 )
 from services.mission_service import MissionService
 from services.territory_service import TerritoryService
@@ -36,16 +36,11 @@ async def get_dashboard(
     """
     user_id = current_user.id
 
-    # 1. Passive Income Update
-    territory_svc = TerritoryService(session)
-    await territory_svc.collect_passive_income(user_id)
-
-    # 2. Refill Missions
-    mission_svc = MissionService(session)
-    await mission_svc.refill_missions(user_id)
+    # TODO: Move passive income and refill to background tasks / separate endpoint
+    # For now, just read data to avoid datetime issues
 
     # 3. Fetch Data
-    
+
     # Resources
     resources_result = await session.execute(
         select(UserResource).where(UserResource.user_id == user_id)
@@ -55,8 +50,12 @@ async def get_dashboard(
         "money": resources.money if resources else 0,
         "influence": resources.influence if resources else 0,
         "wanted_level": resources.wanted_level if resources else 0,
-        "active_playtime_minutes": resources.active_playtime_minutes if resources else 0,
-        "last_income_tick": resources.last_income_tick if resources else datetime.now(timezone.utc),
+        "active_playtime_minutes": (
+            resources.active_playtime_minutes if resources else 0
+        ),
+        "last_income_tick": (
+            resources.last_income_tick if resources else datetime.now(timezone.utc)
+        ),
     }
 
     # Missions (Available/Pending and Active/In Progress)
@@ -93,41 +92,33 @@ async def get_dashboard(
         elif um.status.value == "in_progress":
             active_missions.append(mission_data)
 
-    # Territories
-    territories_result = await session.execute(
-        select(UserTerritory)
-        .options(selectinload(UserTerritory.territory))
-        .where(UserTerritory.user_id == user_id)
+    # Territories — все территории со статусом
+    territory_svc = TerritoryService(session)
+    territories = await territory_svc.list_for_user(
+        user_id, resources_data["influence"]
     )
-    user_territories = territories_result.scalars().all()
-
-    territories = []
-    for ut in user_territories:
-        territories.append({
-            "id": ut.id,
-            "name": ut.territory.name,
-            "territory_type": ut.territory.territory_type.value,
-            "passive_income_money": ut.territory.passive_income_money,
-            "captured_at": ut.captured_at,
-        })
 
     # Shop
     shop_result = await session.execute(
-        select(ShopItem).where(ShopItem.is_available == True).order_by(ShopItem.display_order)
+        select(ShopItem)
+        .where(ShopItem.is_available == True)
+        .order_by(ShopItem.display_order)
     )
     shop_items = shop_result.scalars().all()
     shop = []
     for item in shop_items:
-        shop.append({
-            "id": item.id,
-            "name": item.name,
-            "description": item.description,
-            "item_type": item.item_type.value,
-            "cost_money": item.cost_money,
-            "cost_influence": item.cost_influence,
-            "base_power": item.base_power,
-            "bonus_power": item.bonus_power,
-        })
+        shop.append(
+            {
+                "id": item.id,
+                "name": item.name,
+                "description": item.description,
+                "item_type": item.item_type.value,
+                "cost_money": item.cost_money,
+                "cost_influence": item.cost_influence,
+                "base_power": item.base_power,
+                "bonus_power": item.bonus_power,
+            }
+        )
 
     return {
         "user_id": current_user.id,

@@ -7,8 +7,10 @@ ENV PIP_NO_CACHE_DIR=1
 ENV POETRY_VIRTUALENVS_CREATE=false
 
 COPY pyproject.toml pyproject.toml
+COPY alembic.ini alembic.ini
 COPY requirements-bot.txt requirements-bot.txt
 COPY frontend/dist ./frontend/dist
+COPY alembic alembic
 COPY src src
 
 RUN apt-get update \

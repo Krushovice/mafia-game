@@ -81,7 +81,7 @@ async def update_character(
 )
 async def list_characters(
     session: AsyncSession = Depends(get_db),
-    current_user=Depends(lambda db=Depends(get_db): get_current_user(db=db)),
+    current_user=Depends(get_current_user),
 ):
     from crud.other_crud import character_crud
 

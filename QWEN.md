@@ -1,2 +1,3 @@
 ## Qwen Added Memories
 - На завтра: продолжаем с Territory (Приоритет 2, #4). Нужно реализовать: модели Territory + UserTerritory, TerritoryService, CRUDTerritory, CRUDUserTerritory, enum TerritoryType, роутеры GET /territories и POST /territories/{id}/capture, миграцию, seed территорий, тесты. Цифры согласованы: порог 25 influence для 1-й территории, +20 за каждую, пассивный доход 50+25*(n-1) coins/10мин, +10 к макс. влиянию за территорию, миссия захвата 3 слота hard.
+- Не трогать бекенд (Python/FastAPI) без явной необходимости. Если нужны изменения на бекенде — спрашивать пользователя перед внесением.

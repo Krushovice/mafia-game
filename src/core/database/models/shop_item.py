@@ -28,12 +28,14 @@ class ShopItem(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, default="")
-    description: Mapped[str] = mapped_column(
-        String(256), nullable=False, default=""
-    )
+    description: Mapped[str] = mapped_column(String(256), nullable=False, default="")
 
     item_type: Mapped[ShopItemType] = mapped_column(
-        Enum(ShopItemType, native_enum=False, length=32),
+        Enum(
+            ShopItemType,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=False,
         default=ShopItemType.CHARACTER,
     )
@@ -44,11 +46,19 @@ class ShopItem(Base):
 
     # Для персонажей
     role: Mapped[CharacterRole | None] = mapped_column(
-        Enum(CharacterRole, native_enum=False, length=32),
+        Enum(
+            CharacterRole,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=True,
     )
     trait: Mapped[CharacterTrait | None] = mapped_column(
-        Enum(CharacterTrait, native_enum=False, length=32),
+        Enum(
+            CharacterTrait,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=True,
     )
     base_power: Mapped[int] = mapped_column(Integer, default=0)
@@ -72,7 +82,5 @@ class ShopItem(Base):
     )
 
     # Кто купил
-    buyer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True
-    )
+    buyer_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     buyer: Mapped["User | None"] = relationship(back_populates="shop_purchases")

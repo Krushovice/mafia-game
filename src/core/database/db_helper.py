@@ -51,11 +51,11 @@ class DataBaseHelper:
         """
         FastAPI dependency.
         """
-        session = self.get_scoped_session()
-        try:
-            yield session
-        finally:
-            await session.close()
+        async with self._session_factory() as session:
+            try:
+                yield session
+            finally:
+                await session.close()
 
 
 # Инициализация для всего проекта

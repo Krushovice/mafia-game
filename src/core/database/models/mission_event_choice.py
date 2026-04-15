@@ -22,7 +22,11 @@ class MissionEventChoice(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("mission_events.id"), index=True)
     choice_type: Mapped[EventChoiceType] = mapped_column(
-        PgEnum(EventChoiceType, native_enum=False, length=32),
+        PgEnum(
+            EventChoiceType,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=False,
     )
 

@@ -1,12 +1,15 @@
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from core.database.models.enums import CharacterRole, CharacterTrait
+from core.database.models import Territory
 from crud.other_crud import (
     character_crud,
     user_crud,
     user_resource_crud,
+    user_territory_crud,
 )
 
 from .base_service import BaseService
@@ -73,7 +76,7 @@ class UserService(BaseService):
         return res
 
     async def _create_starter_package(self, user_id: int):
-        """Создать стартовый пакет: ресурсы + 1 капо."""
+        """Создать стартовый пакет: ресурсы + 1 капо + 1 квартал."""
         # Ресурсы
         await self.user_resource_crud.create(
             self.session,
@@ -101,6 +104,20 @@ class UserService(BaseService):
             },
             commit=False,
         )
+        # Стартовая территория — первый квартал (id=1)
+        result = await self.session.execute(
+            select(Territory).order_by(Territory.id).limit(1)
+        )
+        starter_territory = result.scalar_one_or_none()
+        if starter_territory:
+            await user_territory_crud.create(
+                self.session,
+                {
+                    "user_id": user_id,
+                    "territory_id": starter_territory.id,
+                },
+                commit=False,
+            )
 
     async def get_or_create_by_telegram(
         self, telegram_id: int, username: str | None = None

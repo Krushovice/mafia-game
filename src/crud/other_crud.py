@@ -138,6 +138,14 @@ class CRUDUserMission(CRUDBase[UserMission]):
     def __init__(self):
         super().__init__(UserMission)
 
+    async def list_by_user(
+        self, session: AsyncSession, user_id: int
+    ) -> List[UserMission]:
+        result = await session.execute(
+            select(UserMission).where(UserMission.user_id == user_id)
+        )
+        return result.scalars().all()
+
 
 # MissionCharacter CRUD
 class CRUDMissionCharacter(CRUDBase[MissionCharacter]):

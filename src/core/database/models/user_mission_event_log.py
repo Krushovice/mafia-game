@@ -33,7 +33,11 @@ class UserMissionEventLog(Base):
 
     # Выбор игро (заполняется при respond_to_event)
     chosen_type: Mapped[EventChoiceType | None] = mapped_column(
-        PgEnum(EventChoiceType, native_enum=False, length=32),
+        PgEnum(
+            EventChoiceType,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
         nullable=True,
     )
 

@@ -36,7 +36,11 @@ class UserMission(Base):
     )
 
     status: Mapped[MissionStatus] = mapped_column(
-        Enum(MissionStatus, native_enum=False, length=32),
+        Enum(
+            MissionStatus,
+            native_enum=True,
+            values_callable=lambda e: [item.value for item in e],
+        ),
         default=MissionStatus.PENDING,
         server_default=text(f"'{MissionStatus.PENDING.value}'"),
     )
@@ -44,14 +48,17 @@ class UserMission(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-
     # Для Flash-миссий (исчезает после этого времени)
-    available_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    available_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Локация на карте
-    location_name: Mapped[str] = mapped_column(String(64), default='', server_default='')
-    position_x: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
-    position_y: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
+    location_name: Mapped[str] = mapped_column(
+        String(64), default="", server_default=""
+    )
+    position_x: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    position_y: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     success_chance: Mapped[int] = mapped_column(Integer)
 
