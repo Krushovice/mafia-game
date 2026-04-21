@@ -5,3 +5,6 @@ You are an autonomous coding agent working on this project.
 - When analyzing a project, read all relevant files first, then provide a complete plan, then implement it step by step without stopping
 - If you are unsure about something, make a reasonable decision and continue
 - Do not stop mid-task to ask for clarification unless absolutely critical
+Be concise. Avoid repeating information already discussed.
+When reading files, read only the most relevant parts.
+Do not include full file contents in responses unless necessary.
