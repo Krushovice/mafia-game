@@ -78,6 +78,19 @@ git diff --cached --name-only
 
 ### Шаг 3. Прогон проверок
 
+**Pre-flight: CI parity check** — локальный pytest может проходить из-за editable install (`.pth` в `.venv`), а CI ставит только `requirements.txt`. Перед коммитом убедись что:
+- `pytest.ini` содержит `pythonpath = src` (или эквивалентный механизм), ИЛИ CI делает `pip install -e .`
+- Все импорты из тестов покрыты через `requirements.txt` (не optional `[bot]`/`[dev]` extras, если CI их не ставит)
+- `requires-python` в `pyproject.toml` совместим с матрицей Python в `.github/workflows/*.yml`
+
+Быстрая симуляция CI:
+```bash
+python3 -m venv /tmp/ci-sim && /tmp/ci-sim/bin/pip install -q -r requirements.txt pytest pytest-asyncio aiosqlite
+/tmp/ci-sim/bin/pytest -q
+```
+
+Если падает — фикс в первую очередь, до запуска основных проверок.
+
 Backend (если есть `*.py` изменения):
 ```bash
 ruff check .
@@ -99,23 +112,41 @@ cd frontend && npx tsc -b --noEmit
 
 Если что-то упало и не чинится автоматом — стоп. Не коммить.
 
-### Шаг 4. Коммит
+### Шаг 4. Коммиты (granular!)
 
-Если все проверки зелёные:
+**ЖЁСТКОЕ ПРАВИЛО: один логический change → один коммит.** НЕ один мегакоммит на всё.
 
-```bash
-git status --porcelain  # финальный список
-git add <конкретные файлы>  # НЕ git add -A
-```
+Группируй staged-файлы по логическим единицам:
+
+| Тип изменения | Что входит в один коммит |
+|---|---|
+| Новая фича | Все файлы фичи (модель + миграция + сервис + роутер + тесты на эту фичу) |
+| Bugfix | Только файлы с фиксом + тест на регрессию |
+| Новая зависимость | `pyproject.toml`/`requirements.txt`/`uv.lock`/`package.json`/`package-lock.json` — отдельный коммит `chore: add <lib>` |
+| Удаление зависимости | Аналогично — отдельный `chore: drop <lib>` |
+| Миграция Alembic | Отдельный коммит `feat(db):` или `chore(db):` если структурное изменение независимо от кода |
+| Конфиг линтеров/CI | `pyproject.toml [tool.*]`, `.github/workflows/*` — отдельно `chore: configure <tool>` |
+| Авто-форматирование | Отдельный коммит `style: ruff/isort/black autofix` (не смешивать с фичей) |
+| Docs | `*.md`, картинки — отдельный `docs:` |
+| Удалённые файлы | Если осмысленные (старые правила, мёртвый код) — `chore: remove obsolete <name>` |
+| Скиллы Claude | `.claude/skills/*` — отдельный `chore(claude): add/update skill` |
+| Frontend types | `frontend/src/types.ts` обновления типов — отдельно от UI-кода если меняют контракт |
+| Восстановление файла | Отдельно `fix: restore <file>` если файл был удалён зря |
+
+**Алгоритм:**
+1. Из снапшота `git diff --name-only` сгруппируй файлы по таблице выше
+2. Для каждой группы: `git add <файлы группы>` → отдельный `git commit`
+3. Если файл попадает в две группы — он принадлежит наиболее семантически важной (фича > форматирование)
+4. Чисто-форматные правки одного файла НЕ смешивать с логическими — выноси в `style:` коммит
 
 Сгенерируй commit message в стиле проекта (см. `git log --oneline -10`):
-- Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+- Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `style:`, `build:`, `ci:`
 - Subject ≤ 72 chars, на русском (если в недавних коммитах русский) или английском
 - Body — только если "почему" неочевидно
 
-Если задан `--message` — используй его дословно.
+Если задан `--message` — используй его дословно для **первого** коммита; остальные коммиты-сателлиты сгенерируй автоматически.
 
-Коммит с co-author:
+Коммит с co-author (для каждого):
 ```bash
 git commit -m "$(cat <<'EOF'
 <subject>
@@ -126,6 +157,8 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
 ```
+
+**Перед каждым коммитом** в multi-commit пайплайне проверяй `git status --porcelain` чтобы убедиться что застейжены только нужные файлы.
 
 ### Шаг 5. Push (если `--no-push` не задан)
 
@@ -215,6 +248,8 @@ gh run watch <run-id> --exit-status  # ждёт завершения, exit code 
 5. **НЕ** делай `git add -A` — добавляй только конкретные файлы из diff
 6. **НЕ** обходи hooks (`--no-verify`) и подпись (`--no-gpg-sign`)
 7. Если диалог нужен (тесты упали, мердж-конфликт, неясный intent) — спроси юзера, не угадывай
+8. **НЕ** один мегакоммит на всё — разбивай по логике (см. Шаг 4: фича / зависимость / миграция / docs / linter-config / autoformat — каждое отдельным коммитом)
+9. **НЕ** пропускай CI-parity check — локальная зелень не равна CI-зелень. Симулируй чистый venv (Шаг 3 pre-flight) если вносил изменения в импорты/зависимости/`pytest.ini`
 
 ---
 
