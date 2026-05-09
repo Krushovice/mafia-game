@@ -5,8 +5,9 @@ Revises: 606f7e731343
 Create Date: 2026-04-10
 """
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "add_territory_system"

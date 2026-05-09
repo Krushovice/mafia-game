@@ -9,8 +9,8 @@ from aiogram.types import Update
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-from bot.handlers import bot, dp
 from bot.config import settings as bot_settings
+from bot.handlers import bot, dp
 
 logger = logging.getLogger(__name__)
 

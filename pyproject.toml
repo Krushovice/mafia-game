@@ -28,15 +28,20 @@ dev = [
 [tool.black]
 line-length = 88
 target-version = ["py312"]
+extend-exclude = '''
+/(\.agents|\.claude|frontend|alembic/versions)/
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 88
+skip_glob = [".agents/*", ".claude/*", "frontend/*", "alembic/versions/*"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+exclude = [".agents", ".claude", "frontend", "alembic/versions"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+select = ["E", "F", "W"]
 ignore = ["E501"]  # line length — русский текст не разбить автоматически

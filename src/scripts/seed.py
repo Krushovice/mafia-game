@@ -1,20 +1,21 @@
 """Seed script — заполняет БД тестовыми данными через ORM."""
 
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy import select
+
 from core.database.db_helper import db_helper
-from core.database.models import ShopItem, Mission, Territory, NPCBoss
+from core.database.models import Mission, NPCBoss, ShopItem, Territory
 from core.database.models.enums import (
-    ShopItemType,
     CharacterRole,
     CharacterTrait,
     MissionDifficulty,
     MissionStatType,
+    ShopItemType,
     TerritoryType,
 )
 

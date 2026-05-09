@@ -2,15 +2,22 @@
 
 import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from core.database.db_helper import db_helper
 from core.database.models import UserMission
-from core.database.models.enums import MissionStatus
+from core.database.models.enums import MissionStatus, NotificationType
 from services.mission_service import MissionService
+from services.notification_service import (
+    enqueue_notification,
+    format_mission_completed,
+    format_mission_event,
+    format_mission_failed,
+)
 from services.territory_service import TerritoryService
 
 logger = logging.getLogger(__name__)
@@ -20,12 +27,17 @@ CHECK_INTERVAL = 600
 
 
 async def complete_expired_missions():
-    """Find and complete missions that have passed their end time."""
+    """Find and complete missions that have passed their end time.
+
+    После каждого автозавершения добавляем запись в очередь уведомлений,
+    чтобы бот отправил пуш в Telegram.
+    """
     try:
         async with AsyncSession(bind=db_helper.engine) as session:
-            # Find expired missions
             result = await session.execute(
-                select(UserMission).where(
+                select(UserMission)
+                .options(selectinload(UserMission.mission))
+                .where(
                     UserMission.status == MissionStatus.IN_PROGRESS,
                     UserMission.ends_at < datetime.now(timezone.utc),
                 )
@@ -38,37 +50,30 @@ async def complete_expired_missions():
                 )
 
             for user_mission in expired_missions:
+                mission_name = (
+                    user_mission.mission.name if user_mission.mission else "Миссия"
+                )
+                user_id = user_mission.user_id
+                um_id = user_mission.id
+
                 try:
-                    # Create service instance for this mission
-                    # Note: We pass the session that loaded the user_mission object
-                    # But since complete_mission might commit, we need to be careful with scope.
-                    # The service uses its own session logic, but here we just call the logic.
-                    # To avoid session conflicts, let's create a new service with the current session
-                    # or better, just call the logic if it's transaction-safe.
-                    # However, MissionService.complete_mission expects to commit.
-                    # Since we are in a `with` block (autocommit=False), we need to ensure it works.
-
-                    # Better approach: Create a NEW session for the service logic to isolate commits
-                    # and avoid messing with the current selection loop's state if possible,
-                    # or just handle it carefully.
-
-                    # Actually, simplest is to pass the ID to a helper that handles its own session scope?
-                    # No, let's just use the service. But we must ensure the session is ready.
-
                     svc = MissionService(session)
-                    res = await svc.complete_mission(user_mission.id)
+                    res = await svc.complete_mission(um_id)
 
-                    if res.get("success"):
-                        logger.info(
-                            f"Auto-completed mission {user_mission.id} for user {user_mission.user_id}"
-                        )
-                    else:
+                    if not res.get("success"):
                         logger.warning(
-                            f"Failed to auto-complete mission {user_mission.id}: {res.get('message')}"
+                            f"Failed to auto-complete mission {um_id}: {res.get('message')}"
                         )
+                        continue
+
+                    logger.info(f"Auto-completed mission {um_id} for user {user_id}")
+
+                    await _enqueue_completion_notification(
+                        session, user_id, um_id, mission_name, res
+                    )
 
                 except Exception as e:
-                    logger.error(f"Error completing mission {user_mission.id}: {e}")
+                    logger.error(f"Error completing mission {um_id}: {e}")
                     await session.rollback()
                     continue
 
@@ -76,6 +81,48 @@ async def complete_expired_missions():
 
     except Exception as e:
         logger.error(f"Error in complete_expired_missions loop: {e}")
+
+
+async def _enqueue_completion_notification(
+    session: AsyncSession,
+    user_id: int,
+    user_mission_id: int,
+    mission_name: str,
+    result: dict,
+) -> None:
+    """Поставить в очередь нужный тип уведомления на основе результата `complete_mission`."""
+    if result.get("event_triggered"):
+        body = format_mission_event(mission_name, result.get("event_description") or "")
+        await enqueue_notification(
+            session,
+            user_id=user_id,
+            notification_type=NotificationType.MISSION_EVENT,
+            body=body,
+            payload={
+                "user_mission_id": user_mission_id,
+                "event_log_id": result.get("event_log_id"),
+                "event_type": result.get("event_type"),
+            },
+        )
+        return
+
+    mission_succeeded = (
+        result.get("reward_money", 0) > 0 or result.get("reward_influence", 0) > 0
+    )
+    if mission_succeeded:
+        body = format_mission_completed(mission_name, result)
+        notif_type = NotificationType.MISSION_COMPLETED
+    else:
+        body = format_mission_failed(mission_name)
+        notif_type = NotificationType.MISSION_FAILED
+
+    await enqueue_notification(
+        session,
+        user_id=user_id,
+        notification_type=notif_type,
+        body=body,
+        payload={"user_mission_id": user_mission_id},
+    )
 
 
 async def collect_passive_income_for_all_users():

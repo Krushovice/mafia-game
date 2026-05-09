@@ -60,9 +60,7 @@ async def test_buy_character_not_enough_money(db_session):
     shop_svc = ShopService(db_session)
     items = await shop_svc.list_available()
     expensive = next(
-        i
-        for i in items
-        if i["item_type"] == "character" and i["cost_money"] > 100
+        i for i in items if i["item_type"] == "character" and i["cost_money"] > 100
     )
 
     result = await shop_svc.buy_item(user.id, expensive["id"])
@@ -77,24 +75,25 @@ async def test_buy_weapon_for_character(db_session):
     user = await svc.get_or_create_by_telegram(9102, "weapon_buyer")
 
     # Create a character to own the weapon
-    capo = await character_crud.create(db_session, {
-        "user_id": user.id,
-        "name": "BuyerCapo",
-        "power": 10,
-        "intellect": 10,
-        "agility": 10,
-        "loyalty": 10,
-        "is_busy": False,
-    })
+    capo = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "BuyerCapo",
+            "power": 10,
+            "intellect": 10,
+            "agility": 10,
+            "loyalty": 10,
+            "is_busy": False,
+        },
+    )
 
     await _seed_shop(db_session)
     shop_svc = ShopService(db_session)
     items = await shop_svc.list_available()
     knife = next(i for i in items if i["item_type"] == "weapon")
 
-    result = await shop_svc.buy_weapon_for_character(
-        user.id, knife["id"], capo.id
-    )
+    result = await shop_svc.buy_weapon_for_character(user.id, knife["id"], capo.id)
     assert result["success"] is True
     assert "Куплено оружие" in result["message"]
 
@@ -108,24 +107,25 @@ async def test_buy_tool_for_character(db_session):
     svc = UserService(db_session)
     user = await svc.get_or_create_by_telegram(9103, "tool_buyer")
 
-    capo = await character_crud.create(db_session, {
-        "user_id": user.id,
-        "name": "ToolCapo",
-        "power": 10,
-        "intellect": 10,
-        "agility": 10,
-        "loyalty": 10,
-        "is_busy": False,
-    })
+    capo = await character_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "name": "ToolCapo",
+            "power": 10,
+            "intellect": 10,
+            "agility": 10,
+            "loyalty": 10,
+            "is_busy": False,
+        },
+    )
 
     await _seed_shop(db_session)
     shop_svc = ShopService(db_session)
     items = await shop_svc.list_available()
     lockpick = next(i for i in items if i["item_type"] == "tool")
 
-    result = await shop_svc.buy_tool_for_character(
-        user.id, lockpick["id"], capo.id
-    )
+    result = await shop_svc.buy_tool_for_character(user.id, lockpick["id"], capo.id)
     assert result["success"] is True
     assert "Куплен инструмент" in result["message"]
 
@@ -137,37 +137,38 @@ async def test_buy_weapon_wrong_character(db_session):
     user1 = await svc.get_or_create_by_telegram(9104, "victim")
     user2 = await svc.get_or_create_by_telegram(9105, "thief")
 
-    capo = await character_crud.create(db_session, {
-        "user_id": user1.id,
-        "name": "VictimCapo",
-        "power": 10,
-        "intellect": 10,
-        "agility": 10,
-        "loyalty": 10,
-        "is_busy": False,
-    })
+    capo = await character_crud.create(
+        db_session,
+        {
+            "user_id": user1.id,
+            "name": "VictimCapo",
+            "power": 10,
+            "intellect": 10,
+            "agility": 10,
+            "loyalty": 10,
+            "is_busy": False,
+        },
+    )
 
     await _seed_shop(db_session)
     shop_svc = ShopService(db_session)
     items = await shop_svc.list_available()
     knife = next(i for i in items if i["item_type"] == "weapon")
 
-    result = await shop_svc.buy_weapon_for_character(
-        user2.id, knife["id"], capo.id
-    )
+    result = await shop_svc.buy_weapon_for_character(user2.id, knife["id"], capo.id)
     assert result["success"] is False
-    assert "не ваш" in result["message"].lower() or "not found" in result[
-        "message"
-    ].lower()
+    assert (
+        "не ваш" in result["message"].lower()
+        or "not found" in result["message"].lower()
+    )
+
 
 async def _seed_shop(db_session):
     """Seed shop items for tests."""
     from core.database.models.enums import (
         CharacterRole,
         CharacterTrait,
-        ShopItemType,
     )
-    from crud.other_crud import shop_item_crud
 
     existing = await shop_item_crud.list(db_session)
     if existing:

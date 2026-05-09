@@ -1,18 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from api.dependencies import get_current_user, get_db
 from core.database.models import Mission, MissionEvent
-from core.database.models.mission_event_choice import MissionEventChoice
 from crud.other_crud import user_mission_crud
 from schemas.event_choice_schemas import (
     ActiveEventRead,
     EventChoiceResponse,
     MissionEventChoiceRead,
 )
-from schemas.user_mission_schemas import UserMissionRead, UserMissionStart
+from schemas.user_mission_schemas import UserMissionRead
 from services.mission_service import MissionService
 
 router = APIRouter(prefix="/user_missions", tags=["UserMissions"])

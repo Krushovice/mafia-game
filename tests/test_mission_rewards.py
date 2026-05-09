@@ -58,43 +58,39 @@ async def test_force_mission_reward(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -157,43 +153,39 @@ async def test_stealth_mission_reward(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -244,43 +236,39 @@ async def test_diplomacy_mission_reward(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -331,43 +319,39 @@ async def test_reward_multiplier(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -422,43 +406,39 @@ async def test_mission_requires_weapon(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -514,43 +494,39 @@ async def test_mission_with_weapon_passes(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -596,43 +572,39 @@ async def test_mission_requires_tool(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -689,43 +661,39 @@ async def test_mission_with_tool_passes(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -777,43 +745,39 @@ async def test_complete_mission_allocates_resources(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -882,43 +846,39 @@ async def test_failed_mission_no_reward(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 
@@ -1010,43 +970,39 @@ async def test_mission_too_many_characters(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [c1, c2])
-
 
     await db_session.refresh(um)
 
@@ -1092,43 +1048,39 @@ async def test_mission_busy_character(db_session):
     )
 
     svc = MissionService(db_session)
-    await user_mission_crud.create(db_session, {
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": mission.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "user_id": user.id,
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
-        "mission_id": mission.id,
+    await user_mission_crud.create(
+        db_session,
+        {
+            "user_id": user.id,
+            "mission_id": um.id,
+            "status": "pending",
+            "success_chance": 100,
+        },
+    )
 
-        "status": "pending",
-
-        "success_chance": 100,
-
-    })
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
-    await user_mission_crud.create(db_session, {
-
-
-        "user_id": user.id,
-
-
-        "mission_id": um.id,
-
-
-        "status": "pending",
-
-
-        "success_chance": 100,
-
-
-    })
-
-
-    um = [m for m in await user_mission_crud.list(db_session) if m.user_id == user.id and m.status.value == "pending"][0]
-
+    um = [
+        m
+        for m in await user_mission_crud.list(db_session)
+        if m.user_id == user.id and m.status.value == "pending"
+    ][0]
 
     res = await svc.start_mission_execution(user.id, um.id, [char])
-
 
     await db_session.refresh(um)
 

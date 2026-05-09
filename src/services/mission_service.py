@@ -208,8 +208,9 @@ class MissionService(BaseService):
         """Ensure user has at least 3 available missions on the map.
         Filters out missions that are impossible with current characters.
         """
-        from sqlalchemy import select, func
-        from core.database.models import Character, Mission, UserMission
+        from sqlalchemy import func, select
+
+        from core.database.models import Character, UserMission
         from crud.other_crud import mission_crud, user_mission_crud
 
         result = await self.session.execute(
@@ -226,7 +227,7 @@ class MissionService(BaseService):
         # Get user's free characters to estimate capability
         chars_result = await self.session.execute(
             select(Character).where(
-                Character.user_id == user_id, Character.is_busy == False
+                Character.user_id == user_id, Character.is_busy.is_(False)
             )
         )
         free_chars = chars_result.scalars().all()
@@ -311,10 +312,8 @@ class MissionService(BaseService):
                 "message": f"Уровень розыска слишком высок ({resources.wanted_level}). Подождите снижения.",
             }
 
-        from crud.other_crud import user_mission_crud
-
         # Проверка wanted
-        from crud.other_crud import user_resource_crud
+        from crud.other_crud import user_mission_crud, user_resource_crud
 
         resources = await user_resource_crud.get_by_user(self.session, user_id)
         if resources and resources.wanted_level > 80:

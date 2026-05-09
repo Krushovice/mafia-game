@@ -27,12 +27,12 @@ class DashboardMission(BaseModel):
     location_name: Optional[str]
     position_x: Optional[int]
     position_y: Optional[int]
-    
+
     # Template info (if available)
     template_name: Optional[str]
     template_description: Optional[str]
     difficulty: Optional[str]
-    
+
     # Stats for running mission
     ends_at: Optional[datetime]
     reward_money: Optional[int]
@@ -61,7 +61,7 @@ class DashboardShopItem(BaseModel):
     cost_influence: int
     base_power: Optional[int]
     bonus_power: Optional[int]
-    
+
     class Config:
         orm_mode = True
 
@@ -70,17 +70,17 @@ class DashboardResponse(BaseModel):
     user_id: int
     telegram_id: int
     username: Optional[str]
-    
+
     resources: DashboardResources
-    
+
     # Map missions (Pending)
     available_missions: list[DashboardMission]
-    
+
     # Running missions (In Progress)
     active_missions: list[DashboardMission]
-    
+
     # Captured territories
     territories: list[DashboardTerritory]
-    
+
     # Shop items
     shop: list[DashboardShopItem]

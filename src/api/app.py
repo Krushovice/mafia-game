@@ -21,7 +21,7 @@ from api.routers import user_missions as user_missions_router
 from api.routers import wanted as wanted_router
 from api.routers import webhook as webhook_router
 from bot.config import settings as bot_settings
-from bot.handlers import bot, dp
+from bot.handlers import bot
 from core.config import settings
 from core.database.db_helper import db_helper
 from core.logging import setup_logging

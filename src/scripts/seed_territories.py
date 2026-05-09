@@ -1,4 +1,4 @@
-"""Seed 8 default territories with balanced economy."""
+"""Seed 7 территорий города Сан-Марчелло."""
 
 import asyncio
 import sys
@@ -12,140 +12,158 @@ from core.database.db_helper import db_helper
 from core.database.models.enums import TerritoryType
 from crud.other_crud import territory_crud
 
-# Target: ~500 coins/tick (10 min) for 8 territories => ~3000/hour
-# Values scaled down from original.
+# Пассивный доход за тик (10 мин) для всех 7 районов суммарно ~300 монет
+# $$ = 15-20, $$$ = 35-45, $$$$ = 60-65
 TERRITORIES = [
     {
-        "name": "Маленький квартал",
+        "id": 1,
+        "name": "Уэст-Энд",
+        "territory_type": TerritoryType.NEIGHBORHOOD,
+        "description": "Рабочий квартал с дешёвыми забегаловками и ветхими складами. Стартовая база игрока.",
+        "influence_required": 0,
+        "influence_cost": 0,
+        "power_required": 0,
+        "intellect_required": 0,
+        "agility_required": 0,
+        "reward_influence": 0,
+        "reward_money": 0,
+        "passive_income_money": 15,
+        "passive_income_influence": 1,
+        "display_order": 1,
+        "grid_x": 0,
+        "grid_y": 1,
+    },
+    {
+        "id": 2,
+        "name": "Центральный Деловой",
         "territory_type": TerritoryType.DISTRICT,
-        "description": "Тихий жилой район. Идеально для старта.",
+        "description": "Небоскрёбы, банки и элитные рестораны. Самый прибыльный район.",
         "influence_required": 25,
+        "influence_cost": 10,
         "power_required": 20,
         "intellect_required": 15,
         "agility_required": 15,
         "reward_influence": 15,
-        "reward_money": 200,
-        "passive_income_money": 22,  # ~220 total for 8
-        "passive_income_influence": 0,
-        "display_order": 1,
+        "reward_money": 250,
+        "passive_income_money": 60,
+        "passive_income_influence": 2,
+        "display_order": 2,
+        "grid_x": 1,
+        "grid_y": 1,
     },
     {
-        "name": "Портовый район",
-        "territory_type": TerritoryType.DISTRICT,
-        "description": "Грузовой порт. Контрабанда и чёрный рынок.",
+        "id": 3,
+        "name": "Литл-Итали",
+        "territory_type": TerritoryType.NEIGHBORHOOD,
+        "description": "Рестораны, семейные лавки и старые традиции. Высокий доход от «крышевания».",
         "influence_required": 40,
+        "influence_cost": 12,
         "power_required": 25,
         "intellect_required": 20,
         "agility_required": 20,
-        "reward_influence": 15,
-        "reward_money": 300,
-        "passive_income_money": 33,
-        "passive_income_influence": 0,
-        "display_order": 2,
-    },
-    {
-        "name": "Торговый центр",
-        "territory_type": TerritoryType.NEIGHBORHOOD,
-        "description": "Крупный торговый район. Рэкет и защита.",
-        "influence_required": 55,
-        "power_required": 30,
-        "intellect_required": 25,
-        "agility_required": 20,
-        "reward_influence": 20,
-        "reward_money": 400,
-        "passive_income_money": 45,
-        "passive_income_influence": 0,
+        "reward_influence": 18,
+        "reward_money": 350,
+        "passive_income_money": 40,
+        "passive_income_influence": 2,
         "display_order": 3,
+        "grid_x": 1,
+        "grid_y": 0,
     },
     {
-        "name": "Индустриальная зона",
-        "territory_type": TerritoryType.NEIGHBORHOOD,
-        "description": "Заводы и склады. Контрабандное производство.",
+        "id": 4,
+        "name": "Индустриальный",
+        "territory_type": TerritoryType.DISTRICT,
+        "description": "Заводы, склады и подпольные цеха. Контрабанда процветает.",
+        "influence_required": 55,
+        "influence_cost": 15,
+        "power_required": 30,
+        "intellect_required": 20,
+        "agility_required": 25,
+        "reward_influence": 20,
+        "reward_money": 450,
+        "passive_income_money": 20,
+        "passive_income_influence": 1,
+        "display_order": 4,
+        "grid_x": 1,
+        "grid_y": 2,
+    },
+    {
+        "id": 5,
+        "name": "Портовый Район",
+        "territory_type": TerritoryType.BOROUGH,
+        "description": "Доки, грузовые терминалы и контейнерные склады. Центр морской контрабанды.",
         "influence_required": 70,
+        "influence_cost": 18,
+        "power_required": 35,
+        "intellect_required": 25,
+        "agility_required": 25,
+        "reward_influence": 22,
+        "reward_money": 550,
+        "passive_income_money": 40,
+        "passive_income_influence": 2,
+        "display_order": 5,
+        "grid_x": 2,
+        "grid_y": 2,
+    },
+    {
+        "id": 6,
+        "name": "Риверсайд",
+        "territory_type": TerritoryType.NEIGHBORHOOD,
+        "description": "Стильный прибрежный район с казино и ночными клубами.",
+        "influence_required": 85,
+        "influence_cost": 20,
         "power_required": 35,
         "intellect_required": 30,
-        "agility_required": 25,
-        "reward_influence": 20,
-        "reward_money": 500,
-        "passive_income_money": 55,
-        "passive_income_influence": 0,
-        "display_order": 4,
-    },
-    {
-        "name": "Финансовый квартал",
-        "territory_type": TerritoryType.BOROUGH,
-        "description": "Банки и офисы. Отмывание денег и коррупция.",
-        "influence_required": 85,
-        "power_required": 30,
-        "intellect_required": 40,
-        "agility_required": 25,
-        "reward_influence": 15,
-        "reward_money": 600,
-        "passive_income_money": 67,
-        "passive_income_influence": 0,
-        "display_order": 5,
-    },
-    {
-        "name": "Развлекательный район",
-        "territory_type": TerritoryType.BOROUGH,
-        "description": "Казино, клубы, подпольные заведения.",
-        "influence_required": 95,
-        "power_required": 35,
-        "intellect_required": 35,
         "agility_required": 30,
-        "reward_influence": 10,
-        "reward_money": 700,
-        "passive_income_money": 78,
-        "passive_income_influence": 0,
+        "reward_influence": 25,
+        "reward_money": 650,
+        "passive_income_money": 45,
+        "passive_income_influence": 2,
         "display_order": 6,
+        "grid_x": 2,
+        "grid_y": 1,
     },
     {
-        "name": "Правительственный квартал",
-        "territory_type": TerritoryType.BOROUGH,
-        "description": "Мэрия, суды, полиция. Высший уровень влияния.",
-        "influence_required": 100,
+        "id": 7,
+        "name": "Холмы",
+        "territory_type": TerritoryType.DISTRICT,
+        "description": "Особняки, закрытые клубы и элита города. Самый престижный квартал.",
+        "influence_required": 95,
+        "influence_cost": 25,
         "power_required": 40,
-        "intellect_required": 45,
-        "agility_required": 30,
-        "reward_influence": 10,
+        "intellect_required": 35,
+        "agility_required": 35,
+        "reward_influence": 30,
         "reward_money": 800,
-        "passive_income_money": 90,
-        "passive_income_influence": 0,
+        "passive_income_money": 65,
+        "passive_income_influence": 3,
         "display_order": 7,
-    },
-    {
-        "name": "Центр города",
-        "territory_type": TerritoryType.BOROUGH,
-        "description": "Сердце империи. Контроль над всем городом.",
-        "influence_required": 110,
-        "power_required": 50,
-        "intellect_required": 50,
-        "agility_required": 40,
-        "reward_influence": 10,
-        "reward_money": 1000,
-        "passive_income_money": 100,
-        "passive_income_influence": 0,
-        "display_order": 8,
+        "grid_x": 2,
+        "grid_y": 0,
     },
 ]
 
 
 async def seed_territories():
+    """Идемпотентный upsert: обновляет существующие записи по id, создаёт недостающие."""
     async with AsyncSession(bind=db_helper.engine) as session:
-        existing = await territory_crud.list(session)
-        if existing:
-            print(f"✅ {len(existing)} territories already exist, skipping")
-            return
-
+        created = 0
+        updated = 0
         for data in TERRITORIES:
-            await territory_crud.create(session, data)
+            existing = await territory_crud.get(session, data["id"])
+            if existing:
+                await territory_crud.update(session, data["id"], data, commit=False)
+                updated += 1
+            else:
+                await territory_crud.create(session, data, commit=False)
+                created += 1
 
         await session.commit()
-        print(f"✅ Created {len(TERRITORIES)} territories")
+        print(f"✅ Территории: создано {created}, обновлено {updated}")
 
 
 async def main():
-    print("🌱 Seeding territories...")
+    print("🌱 Заполняем территории...")
     await seed_territories()
     await db_helper.engine.dispose()
 

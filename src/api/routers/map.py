@@ -1,12 +1,12 @@
 """Map Router — отдаёт карту города с территориями и NPC боссами."""
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from api.dependencies import get_current_user, get_db
-from core.database.models import Territory, NPCBoss, UserTerritory
+from core.database.models import Territory, UserTerritory
 
 router = APIRouter(prefix="/map", tags=["Map"])
 

@@ -352,7 +352,7 @@ class CRUDShopItem(CRUDBase[ShopItem]):
     async def list_available(self, session: AsyncSession) -> List[ShopItem]:
         result = await session.execute(
             select(ShopItem)
-            .where(ShopItem.is_available == True)
+            .where(ShopItem.is_available.is_(True))
             .order_by(ShopItem.display_order)
         )
         return result.scalars().all()

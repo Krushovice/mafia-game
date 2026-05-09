@@ -27,8 +27,8 @@ export interface Mission {
 export interface Territory {
   id: number;
   name: string;
-  description?: string;
-  territory_type: string;
+  description: string;
+  territory_type: 'district' | 'neighborhood' | 'borough';
   power_required: number;
   intellect_required: number;
   agility_required: number;
@@ -38,7 +38,13 @@ export interface Territory {
   is_captured: boolean;
   captured_by_user_id: number | null;
   captured_at?: string;
+  grid_x: number;
+  grid_y: number;
+  influence_required: number;
+  reward_influence: number;
+  reward_money: number;
 }
+
 
 export interface ShopItem {
   id: number;

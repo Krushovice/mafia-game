@@ -52,12 +52,12 @@ async def delete_weapon(
     current_user=Depends(get_current_user),
 ):
     # Проверяем владение через CRUD или SQL, но проще найти оружие и проверить owner
-    from crud.other_crud import weapon_crud
-
     # Нужно загрузить weapon с owner
     from sqlalchemy import select
-    from core.database.models import Weapon
     from sqlalchemy.orm import selectinload
+
+    from core.database.models import Weapon
+    from crud.other_crud import weapon_crud
 
     res = await session.execute(
         select(Weapon).options(selectinload(Weapon.owner)).where(Weapon.id == weapon_id)
@@ -69,7 +69,7 @@ async def delete_weapon(
     if weapon.owner.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not allowed")
 
-    deleted = await weapon_crud.delete(session, weapon_id)
+    await weapon_crud.delete(session, weapon_id)
     return {"success": True}
 
 
@@ -117,8 +117,9 @@ async def delete_tool(
 ):
     # Проверяем владение
     from sqlalchemy import select
-    from core.database.models import Tool
     from sqlalchemy.orm import selectinload
+
+    from core.database.models import Tool
 
     res = await session.execute(
         select(Tool).options(selectinload(Tool.owner)).where(Tool.id == tool_id)
@@ -130,5 +131,5 @@ async def delete_tool(
     if tool.owner.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not allowed")
 
-    deleted = await tool_crud.delete(session, tool_id)
+    await tool_crud.delete(session, tool_id)
     return {"success": True}

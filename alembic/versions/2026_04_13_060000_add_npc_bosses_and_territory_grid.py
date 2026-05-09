@@ -5,8 +5,9 @@ Add NPCBoss table and grid_x, grid_y, boss_id columns to Territory.
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'npc_bosses_grid'

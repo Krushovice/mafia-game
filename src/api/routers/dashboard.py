@@ -1,23 +1,19 @@
 """TMA Dashboard Router."""
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from api.dependencies import get_current_user, get_db
 from core.database.models import (
-    Mission,
     ShopItem,
-    Territory,
     UserMission,
     UserResource,
-    UserTerritory,
 )
-from services.mission_service import MissionService
 from services.territory_service import TerritoryService
 
 router = APIRouter(prefix="/tma", tags=["TMA"])
@@ -101,7 +97,7 @@ async def get_dashboard(
     # Shop
     shop_result = await session.execute(
         select(ShopItem)
-        .where(ShopItem.is_available == True)
+        .where(ShopItem.is_available.is_(True))
         .order_by(ShopItem.display_order)
     )
     shop_items = shop_result.scalars().all()

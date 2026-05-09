@@ -32,7 +32,7 @@ async def test_start_and_complete_mission(db_session):
     )
 
     # create mission
-    mission = await mission_crud.create(
+    _mission = await mission_crud.create(
         db_session,
         {
             "name": "Test",
@@ -60,7 +60,9 @@ async def test_start_and_complete_mission(db_session):
     # fetch user_mission and set ends_at in past
     ums = await user_mission_crud.list(db_session)
     assert len(ums) >= 1
-    um = [m for m in ums if m.status.value == "in_progress" and m.available_until is None][0]
+    um = [
+        m for m in ums if m.status.value == "in_progress" and m.available_until is None
+    ][0]
     um.ends_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     await db_session.commit()
 

@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import Character, ShopItem, Tool, Weapon
+from core.database.models import Character, ShopItem
 from core.database.models.enums import ShopItemType
 from crud.other_crud import (
     character_crud,

@@ -1,10 +1,10 @@
 from typing import Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models.enums import CharacterRole, CharacterTrait
 from core.database.models import Territory
+from core.database.models.enums import CharacterRole, CharacterTrait
 from crud.other_crud import (
     character_crud,
     user_crud,

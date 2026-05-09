@@ -1,4 +1,3 @@
-import enum
 from enum import StrEnum
 
 
@@ -76,3 +75,24 @@ class ShopItemType(StrEnum):
     CHARACTER = "character"
     WEAPON = "weapon"
     TOOL = "tool"
+
+
+class NotificationType(StrEnum):
+    """Тип уведомления для очереди отправки в Telegram."""
+
+    MISSION_COMPLETED = "mission_completed"  # миссия успешно завершена
+    MISSION_FAILED = "mission_failed"  # миссия провалена
+    MISSION_EVENT = "mission_event"  # сработало событие (облава) — нужен выбор игрока
+    FLASH_MISSION = "flash_mission"  # появилась flash-миссия
+    RAID = "raid"  # облава вне миссии (на потом)
+    GENERIC = "generic"  # системное
+
+
+class NotificationStatus(StrEnum):
+    """Статус доставки уведомления."""
+
+    PENDING = "pending"  # ждёт отправки
+    SENT = "sent"  # доставлено
+    FAILED = (
+        "failed"  # отправка провалилась окончательно (юзер заблокировал бота и т.п.)
+    )
