@@ -2,18 +2,20 @@
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+import random
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.database.db_helper import db_helper
-from core.database.models import UserMission
-from core.database.models.enums import MissionStatus, NotificationType
+from core.database.models import Mission, User, UserMission
+from core.database.models.enums import MissionStatus, MissionType, NotificationType
 from services.mission_service import MissionService
 from services.notification_service import (
     enqueue_notification,
+    format_flash_mission,
     format_mission_completed,
     format_mission_event,
     format_mission_failed,
@@ -24,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 # Check interval in seconds (10 minutes for passive income)
 CHECK_INTERVAL = 600
+
+FLASH_MIN_INTERVAL = 4 * 3600   # 4 hours
+FLASH_MAX_INTERVAL = 6 * 3600   # 6 hours
+FLASH_DURATION = 2 * 3600       # flash mission lives 2 hours
 
 
 async def complete_expired_missions():
@@ -184,9 +190,94 @@ async def collect_passive_income_for_all_users():
         logger.error(f"Error in collect_passive_income_for_all_users loop: {e}")
 
 
+async def spawn_flash_mission() -> None:
+    """Create one global flash UserMission and notify all users.
+
+    Picks a random mission as template, multiplies rewards x2.5, sets
+    available_until=now+2h, user_id=None (global — any player can claim it).
+    """
+    try:
+        async with AsyncSession(bind=db_helper.engine) as session:
+            # Clean up stale expired flash missions first
+            now = datetime.now(timezone.utc)
+            stale = await session.execute(
+                select(UserMission).where(
+                    UserMission.mission_type == MissionType.FLASH,
+                    UserMission.user_id.is_(None),
+                    UserMission.available_until < now,
+                )
+            )
+            for um in stale.scalars().all():
+                await session.delete(um)
+
+            # Pick random mission template
+            result = await session.execute(
+                select(Mission).order_by(func.random()).limit(1)
+            )
+            mission = result.scalar_one_or_none()
+            if not mission:
+                logger.warning("spawn_flash_mission: no missions in DB, skipping")
+                return
+
+            available_until = now + timedelta(seconds=FLASH_DURATION)
+            flash_um = UserMission(
+                user_id=None,
+                mission_id=mission.id,
+                status=MissionStatus.PENDING,
+                mission_type=MissionType.FLASH,
+                available_until=available_until,
+                success_chance=75,
+                reward_money=int(mission.reward_money * 2.5),
+                reward_influence=int(mission.reward_influence * 2.5),
+                wanted_increase=int(mission.wanted_increase * 1.5),
+                location_name=mission.name,
+                position_x=0,
+                position_y=0,
+            )
+            session.add(flash_um)
+            await session.flush()
+            flash_id = flash_um.id
+
+            # Notify all users
+            users_result = await session.execute(select(User))
+            users = users_result.scalars().all()
+
+            expires_text = available_until.strftime("%H:%M UTC")
+            body = format_flash_mission(mission.name, expires_text)
+
+            for user in users:
+                await enqueue_notification(
+                    session,
+                    user_id=user.id,
+                    notification_type=NotificationType.FLASH_MISSION,
+                    body=body,
+                    payload={"flash_mission_id": flash_id},
+                )
+
+            await session.commit()
+            logger.info(
+                f"Flash mission spawned: '{mission.name}' "
+                f"(id={flash_id}), notified {len(users)} users, "
+                f"expires {available_until.isoformat()}"
+            )
+    except Exception as e:
+        logger.error(f"Error in spawn_flash_mission: {e}")
+
+
+async def flash_mission_loop() -> None:
+    """Spawn flash missions every 4-6 hours."""
+    while True:
+        delay = random.randint(FLASH_MIN_INTERVAL, FLASH_MAX_INTERVAL)
+        logger.info(f"Next flash mission in {delay / 3600:.1f}h")
+        await asyncio.sleep(delay)
+        await spawn_flash_mission()
+
+
 async def background_tasks_loop():
     """Main loop for background tasks."""
     logger.info("Starting background tasks loop.")
+
+    asyncio.create_task(flash_mission_loop())
 
     # Run passive income collection every 10 minutes (600 seconds)
     while True:
