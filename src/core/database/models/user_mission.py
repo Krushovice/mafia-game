@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from .user import User
     from .user_mission_event_log import UserMissionEventLog
 
-from .enums import MissionStatus
+from .enums import MissionStatus, MissionType
 
 
 class UserMission(Base):
@@ -30,7 +30,8 @@ class UserMission(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    # Nullable for global flash missions that have no specific owner
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
     mission_id: Mapped[int | None] = mapped_column(
         ForeignKey("missions.id"), nullable=True
     )
@@ -47,6 +48,17 @@ class UserMission(Base):
 
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    mission_type: Mapped["MissionType"] = mapped_column(
+        Enum(
+            MissionType,
+            native_enum=True,
+            values_callable=lambda e: [i.value for i in e],
+        ),
+        nullable=True,
+        default=MissionType.REGULAR,
+        server_default="regular",
+    )
 
     # Для Flash-миссий (исчезает после этого времени)
     available_until: Mapped[datetime | None] = mapped_column(
@@ -81,7 +93,7 @@ class UserMission(Base):
 
     __table_args__ = (Index("ix_user_missions_ends_at_status", "ends_at", "status"),)
 
-    user: Mapped["User"] = relationship(back_populates="missions")
+    user: Mapped["User | None"] = relationship(back_populates="missions")
     mission: Mapped["Mission"] = relationship(back_populates="user_missions")
     characters: Mapped[list["MissionCharacter"]] = relationship(
         back_populates="user_mission"
